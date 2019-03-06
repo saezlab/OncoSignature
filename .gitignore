@@ -1,0 +1,6 @@
+*.pdf
+*.Rhistory
+*.Rdata
+*.pyc
+*.pptx
+**/data/*
