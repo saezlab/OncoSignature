@@ -1,6 +1,12 @@
+# Files
 *.pdf
 *.Rhistory
 *.Rdata
 *.pyc
 *.pptx
-**/data/*
+*.log
+
+# Folders
+/**/data/*
+/**/.ipynb_checkpoints/
+/**/results/*
