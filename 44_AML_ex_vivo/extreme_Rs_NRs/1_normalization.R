@@ -6,7 +6,7 @@ library(limma)
 library(omicToolsTest)
 
 # Set up CWD and load raw data
-#setwd('/media/nico/JRC_COMBINE_NICO_BAK/OncoSignature/ORGANIZED/44_AML_ex_vivo/')
+setwd('/media/nico/JRC_COMBINE_NICO_BAK/OncoSignature/ORGANIZED/44_AML_ex_vivo/')
 
 raw_data = read_delim('data/Phospho (STY)Sites-for-normalization.txt', '\t',
 					  escape_double=FALSE, trim_ws=TRUE, na='NaN')
@@ -63,6 +63,8 @@ for(i in unique_dups){
 
 # Consider zeroes as NaN
 df[df==0] = NA
+
+write.csv(df, 'data/raw.csv')
 
 # Do the plots
 subdir = 'results/1_log2/'
