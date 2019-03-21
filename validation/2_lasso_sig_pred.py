@@ -47,7 +47,7 @@ res = pd.DataFrame(index=data.columns, columns=range(predictors.shape[1]))
 for n in range(predictors.shape[1]):
     m = predictors.iloc[:, n].values
     b = intercepts.iloc[n].values[0]
-    res[n] = 1 / (1 + np.exp((data.values.T * m).sum(axis=1) + b))
+    res[n] = 1 / (1 + np.exp(-((data.values.T * m).sum(axis=1) + b)))
 
 # Applying models with ACC>80%
 predictors80 = predictors.loc[:, (accs>=0.8).values.flatten()]
@@ -56,7 +56,7 @@ res80 = pd.DataFrame(index=data.columns, columns=range(predictors80.shape[1]))
 for n in range(predictors80.shape[1]):
     m = predictors80.iloc[:, n].values
     b = intercepts.iloc[n].values[0]
-    res80[n] = 1 / (1 + np.exp((data.values.T * m).sum(axis=1) + b))
+    res80[n] = 1 / (1 + np.exp(-((data.values.T * m).sum(axis=1) + b)))
 
 # Plotting the results
 res['med'] = res.median(axis=1)
@@ -77,8 +77,8 @@ ax.set_xlabel('Sample')
 ax.set_ylabel('Prediction probability')
 ax.set_xlim([rng[0] - 1, rng[-1] + 1])
 ax.legend([Line2D([0], [0], color='C0'), Line2D([0], [0], color='C1')],
-          ['ALL', r'$ACC\geq 80%$'], loc='upper left')
+          ['ALL', r'$ACC\geq 80%$'], loc='lower right')
 fig.tight_layout()
 fig
 
-fig.savefig('results/pred_prob.png')
+fig.savefig('results/pred_prob.pdf')
