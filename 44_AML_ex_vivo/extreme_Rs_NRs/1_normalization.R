@@ -32,7 +32,7 @@ targets[, 'condition'] = as.character(lapply(colnames(raw_df)[1:ncol(raw_df) - 1
                                              function(i){
                                                  name = strsplit(i, '.', fixed = TRUE)[[1]][1]
                                                  num = substr(name, 1, nchar(name) - 1)
-                                                 cond = annot$annotation[annot$sample == num]
+                                                 cond = annot$condition[annot$sample == num]
                                                  if(as.character(cond) == ""){return(NA)}
                                                  else{
                                                      if(endsWith(name, 'A')){return(paste(cond, '2', sep='_'))}
