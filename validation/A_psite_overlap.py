@@ -8,7 +8,7 @@ import itertools as itt
 import matplotlib.pyplot as plt
 
 from data_tools.iterables import similarity
-from data_tools.plots import venn
+from data_tools.plots import venn, cmap_bkgr
 
 try:
     os.chdir('validation')
@@ -57,15 +57,17 @@ pos = [2.5, 7.5, 12.5, 17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 46.5, 50.5]
 batches = ['Set1', 'Set2', 'Set3', 'Set4', 'Set5', 'Set6', 'Set7', 'Set8',
            'V1', 'V2', 'V3']
 
-# By similarity index
-for (name, mode) in [('Jaccard', 'j'), ('Sorensen-Dice', 'sd'), ('Szymkiewicz-Simpson', 'ss')]:
+# By similarity index (although the only one that makes sense here is Jaccard)
+for (name, mode) in [('Jaccard', 'j'), ('Sorensen-Dice', 'sd'),
+                     ('Szymkiewicz-Simpson', 'ss')]:
     # Iteration over all possible pairs of samples
     for (a, b) in itt.product(rawb.columns, repeat=2):
         sims.loc[a, b] = similarity(psites[a], psites[b], mode=mode)
 
     # Plotting heatmap for a given similarity index
     fig, ax = plt.subplots(figsize=(15, 15))
-    im = ax.imshow(sims.values.astype(float), cmap='nipy_spectral', interpolation='none')
+    im = ax.imshow(sims.values.astype(float), cmap='nipy_spectral',
+                   interpolation='none')
     fig.colorbar(im, shrink=0.75)
 
     ax.set_xticks(pos)
@@ -130,7 +132,8 @@ predictors.shape
 # Adding for comparison to other subsets
 sets['Models'] = set(predictors.index)
 
-plot = venn(sets.values(), labels=sets.keys(), sizes=True, filename='results/psite_overlap_train_model.pdf')
+plot = venn(sets.values(), labels=sets.keys(), sizes=True,
+            filename='results/psite_overlap_train_model.pdf')
 
 #=================== P-SITE OVERLAP MODELS vs. VALIDATION ====================#
 del sets['Train']
@@ -151,8 +154,8 @@ tdata = pd.read_csv('../44_AML_ex_vivo/data/raw.csv', index_col=0)
 #    if k not in raw.index:
 #        m.append(k)
 #len(m)
-plot = venn([set(raw.index), set(tdata.index)], labels=['NEW', 'OLD'], sizes=True,
-            filename='results/oldVSnew.pdf')
+plot = venn([set(raw.index), set(tdata.index)], labels=['NEW', 'OLD'],
+            sizes=True, filename='results/oldVSnew.pdf')
 
 #===================== CHECKING OLD vs NEW CORRELATION =======================#
 # List of overlapping p-sites between data files
@@ -183,7 +186,7 @@ fig.tight_layout()
 fig
 fig.savefig('results/corr_samples.pdf')
 
-#====================+= CHECKING OLD vs NEW DIFFERENCE =======================#
+#====================== CHECKING OLD vs NEW DIFFERENCE =======================#
 old = tdata.copy()
 old[pd.isna(old)] = 0 # Set NaN to 0
 new = raw.copy()
@@ -218,3 +221,41 @@ ax.set_yticklabels(difs.columns)
 fig.colorbar(im)
 fig.tight_layout()
 fig.savefig('results/difs.pdf')
+
+#=================== CHECKING OVERLAP VALIDATION - MODELS ====================#
+val = dict((k, psites[k]) for k in rawb.columns[-13:].tolist())
+#val.keys()
+sims = pd.DataFrame(columns=predictors.columns,
+                    index=sorted(rawb.columns[-13:]))
+
+for m in predictors:
+    pred_psites = set(predictors[m].dropna().index)
+    sims[m] = [similarity(pred_psites, val[k], mode='ss')
+               for k in sorted(val.keys())]
+
+# Reordering according to batches
+sims = sims.loc[rawb.columns[-13:], :]
+
+# Plotty plotty
+fig, ax = plt.subplots(figsize=(10, 7))
+im = ax.imshow(sims, aspect='auto', interpolation='none', cmap='nipy_spectral')
+
+ax.set_xlabel('Models')
+ax.set_yticks(range(len(sims.index)))
+ax.set_yticklabels(sims.index)
+ax.set_title('Szymkiewicz-Simpson similarity index between models and measured'
+             ' p-sites in validation set')
+fig.colorbar(im)
+fig.tight_layout()
+fig.savefig('results/validation_models.pdf')
+# Is something over 0.5?
+fig, ax = plt.subplots(figsize=(10, 7))
+im = ax.imshow(sims>=0.5, aspect='auto', interpolation='none', cmap=cmap_bkgr)
+
+ax.set_xlabel('Models')
+ax.set_yticks(range(len(sims.index)))
+ax.set_yticklabels(sims.index)
+ax.set_title(r'Szymkiewicz-Simpson similarity index $\geq$ 0.5')
+#fig.colorbar(im)
+fig.tight_layout()
+fig.savefig('results/validation_models05.pdf')
