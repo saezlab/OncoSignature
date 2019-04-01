@@ -8,7 +8,7 @@ import itertools as itt
 import matplotlib.pyplot as plt
 
 from data_tools.iterables import similarity
-from data_tools.plots import venn, cmap_bkgr
+from data_tools.plots import venn, cmap_bkgr, cmap_rdbkgr
 
 try:
     os.chdir('validation')
