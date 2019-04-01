@@ -42,6 +42,7 @@ print data.shape, predictors.shape
 #data
 
 # Applying ALL the models to the samples
+
 res = pd.DataFrame(index=data.columns, columns=range(predictors.shape[1]))
 
 for n in range(predictors.shape[1]):
@@ -72,7 +73,7 @@ ax.violinplot(res80, showmedians=True, widths=0.75, positions=rng)
 ax.plot([rng[0] - 1, rng[-1] + 1], [0.5, 0.5], 'k--', alpha=0.5)
 
 ax.set_xticks(rng)
-ax.set_xticklabels(data.columns)
+ax.set_xticklabels(res.index)
 ax.set_xlabel('Sample')
 ax.set_ylabel('Prediction probability')
 ax.set_xlim([rng[0] - 1, rng[-1] + 1])
