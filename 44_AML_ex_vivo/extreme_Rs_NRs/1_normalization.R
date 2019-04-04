@@ -6,8 +6,6 @@ library(limma)
 library(omicToolsTest)
 
 # Set up CWD and load raw data
-setwd('/media/nico/JRC_COMBINE_NICO_BAK/OncoSignature/ORGANIZED/44_AML_ex_vivo/')
-
 raw_data = read_delim('data/Phospho (STY)Sites-for-normalization.txt', '\t',
 					  escape_double=FALSE, trim_ws=TRUE, na='NaN')
 
@@ -31,9 +29,9 @@ targets[, 'sample'] = colnames(raw_df)[1:ncol(raw_df) - 1]
 targets[, 'condition'] = as.character(lapply(colnames(raw_df)[1:ncol(raw_df) - 1],
                                              function(i){
                                                  name = strsplit(i, '.', fixed = TRUE)[[1]][1]
-                                                 num = substr(name, 1, nchar(name) - 1)
-                                                 cond = annot$condition[annot$sample == num]
-                                                 if(as.character(cond) == ""){return(NA)}
+                                                 num = as.integer(substr(name, 1, nchar(name) - 1))
+                                                 cond = as.character(annot$annotation[annot$sample == num])
+                                                 if(nchar(cond) == 0){return(NA)}
                                                  else{
                                                      if(endsWith(name, 'A')){return(paste(cond, '2', sep='_'))}
                                                      else{return(paste(cond, '1', sep='_'))}
@@ -56,7 +54,7 @@ df = raw_df[!(raw_df$ID %in% unique_dups), -ncol(raw_df)]
 rownames(df) = raw_df[!(raw_df$ID %in% unique_dups), 'ID']
 
 for(i in unique_dups){
-    aux = data.frame(colSums(raw_df[raw_df$ID == i, 1:ncol(df)]))
+    aux = data.frame(colSums(raw_df[raw_df$ID == i, 1:ncol(df)], na.rm=T))
     colnames(aux) = i
     df = rbind(df, t(aux))
 }
