@@ -39,8 +39,7 @@ df = raw_df[!(raw_df$ID %in% unique_dups), -ncol(raw_df)]
 rownames(df) = raw_df[!(raw_df$ID %in% unique_dups), 'ID']
 
 for(i in unique_dups){
-    #browser()
-    aux = data.frame(colSums(raw_df[raw_df$ID == i, 1:ncol(df)]))
+    aux = data.frame(colSums(raw_df[raw_df$ID == i, 1:ncol(df)], na.rm=T))
     colnames(aux) = i
     df = rbind(df, t(aux))
 }
