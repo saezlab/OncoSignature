@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 os.chdir('/media/nico/JRC_COMBINE_NICO_BAK/OncoSignature/ORGANIZED/44_AML_ex_v'
          'ivo/extreme_Rs_NRs/')
 in_dir = 'lasso_results'
-out_dir = os.path.join(in_dir, 'all')
+out_dir = os.path.join(in_dir, 'acc_80')
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)
 %matplotlib inline

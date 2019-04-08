@@ -12,7 +12,7 @@ from data_tools.models import Lasso
 #from data_tools.plots import venn
 
 #==============================================================================#
-n = 2 # NUMBER OF MODELS
+n = 100 # NUMBER OF MODELS
 tt_ratio = 0.2 # TRAIN/TEST RATIO
 njobs = 100 # NUMBER OF CORES
 #==============================================================================#
@@ -60,24 +60,24 @@ for i, (train, test) in enumerate(sampler.split(x, y)):
     msg = 'Computing model #%d' % (i + 1)
     print msg
     print '=' * len(msg) + '\n'
-    
+
     trainsets.append(list(train))
     testsets.append(list(test))
-    
+
     model = Lasso(Cs=np.linspace(1e-2, 1e0, 1000), sampler='skf', n_jobs=njobs)
     model.fit_data(x.iloc[train, :], y.iloc[train], silent=True)
-    
+
     tx = x.iloc[test, :]
-    
+
     predictors.loc[model.predictors.index, i] = model.predictors.values
     accs[i] = model.score(tx, y.iloc[test])
     pprobs.loc[tx.index, i] = model.predict_proba(tx)[:, 1]
     intercepts[i] = model.intercept_[0]
-    
+
     print '  Model trained, elapsed time %.4f sec.' % (time.time() - start)
     print '  Number of predictors: %d' % sum(pd.notnull(predictors[i]))
     print '  Accuracy: %.4f\n' % accs[i]
-    
+
 print '\nComputed %d models, elapsed time %.4f sec.' %(n, time.time() - gstart)
 
 predictors.to_csv('results/predictors.csv')
