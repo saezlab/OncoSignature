@@ -23,12 +23,16 @@ rawb = raw[[c for c in raw.columns if 'B' in c]] # Only untreated samples
 
 # Check if p-sites with NaN in all samples
 (pd.isna(raw).sum(axis=1) == len(raw)).sum()
+raw.shape
 
 #============================ PROPORTION OF NaNs =============================#
 # Check number of NaNs per sample
 size = float(len(rawb))
 pct = (pd.isna(rawb).sum() / size).sort_values()
+# Non-NaN
+pd.notna(rawb).sum().max(), pd.notna(rawb).sum().min()
 
+pct
 # Make a plot
 rng = range(len(pct))
 fig, ax = plt.subplots(figsize=(15, 5))
@@ -38,7 +42,6 @@ size
 ax.set_xticks(rng)
 ax.set_xticklabels(pct.index, rotation=90)
 ax.set_xlim(rng[0] - 1, rng[-1] + 1)
-
 ax.set_xlabel('Samples')
 ax.set_ylabel('Missing values (%)')
 fig.tight_layout()
