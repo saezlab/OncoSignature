@@ -73,7 +73,8 @@ for i, (train, test) in enumerate(sampler.split(x, y)):
     trainsets.append(list(train))
     testsets.append(list(test))
 
-    model = Lasso(Cs=np.linspace(1e-2, 1e0, 1000), sampler='skf', n_jobs=njobs)
+    model = Lasso(Cs=np.linspace(1e-2, 1e0, 1000), sampler='skf', n_jobs=njobs,
+                  cv=6)
     model.fit_data(x.iloc[train, :], y.iloc[train], silent=True)
 
     tx = x.iloc[test, :]
