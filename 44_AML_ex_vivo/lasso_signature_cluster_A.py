@@ -3,7 +3,7 @@ LASSO Signature - Approach A
 ============================
 
 Here we just use all the training samples (from the significant Rs/NRs
-set of samples).
+set of samples) and all p-sites.
 '''
 
 
@@ -12,6 +12,9 @@ from __future__ import division
 import os
 import time
 from collections import Counter
+
+import matplotlib
+matplotlib.use('Agg')
 
 import numpy as np
 import pandas as pd
@@ -41,13 +44,12 @@ x = data[usecols].T
 annot = pd.read_csv('data/sample_annotated.csv', index_col=5)
 annot.index.name = None
 
-y = dict([(str(i[0]) + 'B', i[1][4]) for i in annot.iterrows() if pd.notna(i[1][4])])
+y = dict([(str(i[0]) + 'B', 1 if i[1][4] == 'R' else 0)
+          for i in annot.iterrows() if pd.notna(i[1][4])])
 y = pd.Series(y)
 
 x = x.loc[y.index, :]
 
-y = pd.Series(index=x.index, dtype=int)
-x.shape
 sampler = sss(n_splits=n, test_size=tt_ratio)
 
 predictors = pd.DataFrame(index=x.columns, columns=range(n))
