@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-os.chdir('/media/nico/JRC_COMBINE_NICO_BAK/OncoSignature/ORGANIZED/validation')
+os.chdir('/home/nico/Desktop/OncoSignature/ORGANIZED/validation')
 
 # Loading validation data
 data = pd.read_csv('data/norm_data.csv', index_col=0)
@@ -17,10 +17,10 @@ data.columns = [c[:-1] for c in data.columns]
 #data.head()
 
 # Loading ensemble of models
-sdir = '../44_AML_ex_vivo/extreme_Rs_NRs/lasso_results'
+sdir = 'cluster_results/C'
 predictors = pd.read_csv(os.path.join(sdir, 'predictors.csv'), index_col=0)
 predictors[pd.isna(predictors)] = 0
-#predictors.head()
+predictors.head()
 intercepts = pd.read_csv(os.path.join(sdir, 'intercepts.csv'), index_col=0,
                          header=None)
 #intercepts.head()
@@ -30,7 +30,7 @@ accs = pd.read_csv(os.path.join(sdir, 'accs.csv'), index_col=0, header=None)
 
 # Reindexing data and predictors to same phosphosites and order
 a, b = map(set, [predictors.index, data.index])
-print map(len, [a, b])
+#print map(len, [a, b])
 
 common = list(a.intersection(b))
 len(common)
@@ -52,6 +52,7 @@ for n in range(predictors.shape[1]):
 
 # Applying models with ACC>80%
 predictors80 = predictors.loc[:, (accs>=0.8).values.flatten()]
+
 res80 = pd.DataFrame(index=data.columns, columns=range(predictors80.shape[1]))
 
 for n in range(predictors80.shape[1]):
@@ -82,4 +83,4 @@ ax.legend([Line2D([0], [0], color='C0'), Line2D([0], [0], color='C1')],
 fig.tight_layout()
 fig
 
-fig.savefig('results/pred_prob.pdf')
+fig.savefig(os.path.join(sdir, 'pred_prob.pdf'))
