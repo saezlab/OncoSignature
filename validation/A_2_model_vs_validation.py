@@ -16,9 +16,12 @@ try:
 except:
     pass
 
+# Number of models
+N = 1000
+
 
 # LOADING DAT-ASS
-sdir = '../44_AML_ex_vivo/extreme_Rs_NRs/lasso_results'
+sdir = 'cluster_results/C'
 
 predictors = pd.read_csv(os.path.join(sdir, 'predictors.csv'), index_col=0)
 predictors[pd.isna(predictors)] = 0
@@ -73,7 +76,7 @@ normb = norm[[c for c in norm.columns if 'B' in c]] # Only untreated samples
 predictors = pd.read_csv(os.path.join(sdir, 'predictors.csv'), index_col=0)
 
 # Subsetting predictors to the ones that had value > 0 in at least one model
-predictors = predictors[pd.isna(predictors).sum(axis=1) < 100]
+predictors = predictors[pd.isna(predictors).sum(axis=1) < N]
 
 order = predictors.median(axis=1)
 order = order.sort_values().index.values
@@ -133,4 +136,4 @@ ax[1, 1].set_yticks([])
 fig.tight_layout()
 fig.delaxes(ax[0, 1])
 fig.colorbar(im, ax=ax[0, 1])
-fig.savefig('results/model_coef_validation.pdf')
+fig.savefig(os.path.join(sdir, 'model_coef_validation.pdf'))
