@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-#os.chdir('/home/nico/Desktop/OncoSignature/ORGANIZED/validation')
+os.chdir('validation/')
 
 # Loading validation data
 data = pd.read_csv('data/norm_data.csv', index_col=0)
