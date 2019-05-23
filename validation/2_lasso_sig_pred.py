@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-os.chdir('/home/nico/Desktop/OncoSignature/ORGANIZED/validation')
+#os.chdir('/home/nico/Desktop/OncoSignature/ORGANIZED/validation')
 
 # Loading validation data
 data = pd.read_csv('data/norm_data.csv', index_col=0)
@@ -17,7 +17,7 @@ data.columns = [c[:-1] for c in data.columns]
 #data.head()
 
 # Loading ensemble of models
-sdir = 'cluster_results/C'
+sdir = 'cluster_results/D'
 predictors = pd.read_csv(os.path.join(sdir, 'predictors.csv'), index_col=0)
 predictors[pd.isna(predictors)] = 0
 predictors.head()

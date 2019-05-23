@@ -21,7 +21,7 @@ N = 1000
 
 
 # LOADING DAT-ASS
-sdir = 'cluster_results/C'
+sdir = 'cluster_results/D'
 
 predictors = pd.read_csv(os.path.join(sdir, 'predictors.csv'), index_col=0)
 predictors[pd.isna(predictors)] = 0
@@ -99,10 +99,11 @@ fig.subplots_adjust(hspace=0.05)
 fig.subplots_adjust(wspace=0.05)
 im = ax[1, 0].imshow(aux.T, interpolation='none', aspect='auto', cmap=cmap_bkgr)
 
-ax[0, 0].violinplot(pred_dist, widths=1, showmedians=True)
+ax[0, 0].violinplot(pred_dist, positions=range(0, len(aux.index)), widths=1,
+                    showmedians=True)
 ax[0, 0].plot([0, len(aux.index) + 1], [0, 0], 'k--', alpha=0.5)
 
-ax[1, 0].set_xticks(range(1, len(aux.index) + 1))
+ax[1, 0].set_xticks(range(0, len(aux.index)))
 ax[1, 0].set_xticklabels(aux.index, rotation=90, fontsize=8)
 ax[1, 0].set_yticks(range(len(aux.columns)))
 ax[1, 0].set_yticklabels(aux.columns)
@@ -128,7 +129,7 @@ ax[1, 1].legend([Line2D([0], [0], color='C0'), Line2D([0], [0], color='C1')],
 ax[1, 0].get_shared_x_axes().join(ax[0, 0], ax[1, 0])
 ax[1, 0].get_shared_y_axes().join(ax[1, 1], ax[1, 0])
 
-ax[0, 0].set_xlim(0, aux.shape[0]+1)
+ax[0, 0].set_xlim(-1, aux.shape[0])
 ax[0, 0].set_xticks([])
 ax[1, 1].set_ylim(-1, aux.shape[1])
 ax[1, 1].set_yticks([])
