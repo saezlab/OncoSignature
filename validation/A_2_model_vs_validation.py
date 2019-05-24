@@ -13,7 +13,7 @@ from data_tools.plots import venn, cmap_bkgr
 try:
     os.chdir('validation')
 
-except:
+except OSError:
     pass
 
 # Number of models
