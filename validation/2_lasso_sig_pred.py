@@ -5,7 +5,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-os.chdir('validation/')
+try:
+    os.chdir('validation')
+
+except OSError:
+    pass
+
+approach = 'D'
+
 
 # Loading validation data
 data = pd.read_csv('data/norm_data.csv', index_col=0)
@@ -17,7 +24,7 @@ data.columns = [c[:-1] for c in data.columns]
 #data.head()
 
 # Loading ensemble of models
-sdir = 'cluster_results/D'
+sdir = 'cluster_results/%s' % approach
 predictors = pd.read_csv(os.path.join(sdir, 'predictors.csv'), index_col=0)
 predictors[pd.isna(predictors)] = 0
 predictors.head()
@@ -28,7 +35,25 @@ intercepts = pd.read_csv(os.path.join(sdir, 'intercepts.csv'), index_col=0,
 accs = pd.read_csv(os.path.join(sdir, 'accs.csv'), index_col=0, header=None)
 #accs.head()
 
+# Plot histogram of accuracies
+aux = accs.copy()
+aux.index.name = None
+aux = aux.sort_values(by=1).squeeze()
+plot = aux.hist(log=True)
+plot.set_title('Histogram of ACC - approach %s' % approach)
+plot.set_xlabel('ACC')
+plot.set_ylabel('# of models')
+plot.figure.savefig(os.path.join(sdir, 'acc_hist.pdf'))
+#fig, ax = plt.subplots(figsize=(5, 10))
+#rng = range(len(aux))
+#ax.barh(rng, aux)
+#ax.set_yticks(rng)
+#ax.set_yticklabels(aux.index)
+#ax.set_ylim(-1, len(aux))
+#fig.tight_layout()
+#fig
 # Reindexing data and predictors to same phosphosites and order
+
 a, b = map(set, [predictors.index, data.index])
 #print map(len, [a, b])
 
