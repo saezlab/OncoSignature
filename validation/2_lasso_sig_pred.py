@@ -40,7 +40,8 @@ aux = accs.copy()
 aux.index.name = None
 aux = aux.sort_values(by=1).squeeze()
 plot = aux.hist(log=True)
-plot.set_title('Histogram of ACC - approach %s' % approach)
+plot.set_title(r'ACC Histogram - approach %s ($\mu$=%.2f%%)'
+               % (approach, aux.mean() * 100))
 plot.set_xlabel('ACC')
 plot.set_ylabel('# of models')
 plot.figure.savefig(os.path.join(sdir, 'acc_hist.pdf'))
