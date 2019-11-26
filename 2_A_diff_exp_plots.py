@@ -38,13 +38,14 @@ dir_ = 'results/2_diff_exp'
 files = [f for f in os.listdir(dir_) if f.endswith('_ttop.csv')]
 
 for f in files:
-    name = ' vs. '.join(f.split('_')[0:2])
+    fname = f.replace('_ttop.csv', '')
+    name = ' vs. '.join(fname.split('vs'))
 
     df = pd.read_csv(os.path.join(dir_, f), index_col=0)
 
     # Volcano plot
     volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
-            filename=os.path.join(dir_, '%s_%s.pdf' %tuple(f.split('_')[0:2])))
+            filename=os.path.join(dir_, '%s.pdf' % fname))
 
     # p-value histogram
     fig, ax = plt.subplots()
@@ -57,5 +58,4 @@ for f in files:
 
     fig.tight_layout()
 
-    fig.savefig(os.path.join(dir_,
-                             '%s_%s_pval_hist.pdf' %tuple(f.split('_')[0:2])))
+    fig.savefig(os.path.join(dir_, '%s_pval_hist.pdf' % fname))
