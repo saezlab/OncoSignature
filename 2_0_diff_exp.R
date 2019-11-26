@@ -42,7 +42,7 @@ targets <- as.data.frame(targets[complete.cases(targets$annot), ])
 f <- factor(targets$condition, levels=unique(targets$condition))
 design <- model.matrix(~0 + f)
                             # Effect of treatment in responders
-cont.matrix <- makeContrasts(R_TvsR_U=fR_T - fR_U, 
+cont.matrix <- makeContrasts(R_TvsR_U=fR_T - fR_U,
                              # Effect pf treatment in non-responders
                              NR_TvsNR_U=fNR_T - fNR_U,
                              # Responders vs. non-responders prior to treatment
@@ -59,6 +59,6 @@ subdir <- paste(out_dir, '2_diff_exp', sep='/')
 ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
 
 for(c in colnames(cont.matrix)){
-    ttop = topTable(pfit, coef=c, adjust='fdr', n=nrow(pfit))
+    ttop <- topTable(pfit, coef=c, adjust='fdr', n=nrow(pfit))
     write.csv(ttop, paste(subdir, paste(c, 'ttop.csv', sep='_'), sep='/'))
 }

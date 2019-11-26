@@ -56,7 +56,7 @@ for f in files:
     ax.set_xlim(0, 1)
     ax.set_xlabel('P.Value')
     ax.set_ylabel('Frequency')
-    ax.set_title('%s : p-value histogram' %name)
+    ax.set_title('%s : p-value histogram' % name)
 
     fig.tight_layout()
 
