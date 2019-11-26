@@ -46,6 +46,8 @@ for f in files:
     # Volcano plot
     volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
             filename=os.path.join(dir_, '%s.pdf' % fname))
+    volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
+            filename=os.path.join(dir_, '%s.png' % fname))
 
     # p-value histogram
     fig, ax = plt.subplots()
