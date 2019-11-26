@@ -27,17 +27,25 @@ library(limma)
 
 library(omicToolsTest)
 
+#----------------------------------- INPUT -----------------------------------#
+data_dir <- 'data'
+dataf <- '20191107_expandSites_table_Pt_CellLines_basicfiltered_LocProb.txt'
+annotf <- 'response.csv'
+
+out_dir <- 'results'
+#-----------------------------------------------------------------------------#
+
 #' Standarizes the column names
-#' 
+#'
 #' @param col [chracter] The column name to standarize
-#' 
+#'
 #' @return [character] The standarized column name
 standarize_name <- function(col){
     # Sample comes from ex-vivo experiments
     if(startsWith(col, 'Set')){
         col <- gsub('Set.', 'EX', col)
         treat <- substr(col, nchar(col), nchar(col))
-        
+
         if(treat == 'A'){# Treated
             return(gsub(treat, '_T', col))
         }
@@ -49,7 +57,7 @@ standarize_name <- function(col){
     else{
         spl <- strsplit(col, '_')[[1]]
         rep <- substr(spl[3], nchar(spl[3]), nchar(spl[3]))
-        
+
         if(spl[2] == 'DMSO'){
             treat <- 'U'
         }
@@ -59,14 +67,6 @@ standarize_name <- function(col){
         return(paste(spl[1], rep, treat, sep='_'))
     }
 }
-
-#----------------------------------- INPUT -----------------------------------#
-data_dir <- 'data'
-dataf <- '20191107_expandSites_table_Pt_CellLines_basicfiltered_LocProb.txt'
-annotf <- 'response.csv'
-
-out_dir <- 'results'
-#-----------------------------------------------------------------------------#
 
 # Creating output directory
 ifelse(!dir.exists(out_dir), dir.create(out_dir, recursive=TRUE), FALSE)
@@ -120,7 +120,7 @@ rownames(df_norm) <- rownames(raw_df)
 for(b in unique(batches)){
     subdf <- raw_df[, targets[targets$batch == b, 'sample']]
     subdf_norm <- as.data.frame(justvsn(as.matrix(subdf)))
-    
+
     df_norm[rownames(subdf_norm), colnames(subdf_norm)] <- subdf_norm
 }
 
@@ -135,4 +135,3 @@ magicPlotMaker(df_bcor, outpath = subdir, w=15, h=15,
 
 # Save the normalized data
 write.csv(df_bcor, paste(data_dir, 'norm_data.csv', sep='/'))
-
