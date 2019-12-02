@@ -15,12 +15,10 @@
 # A full copy of the GNU General Public License can be found on
 # http://www.gnu.org/licenses/.
 #
-# Significant differential phosphorylation
-# ========================================
+# Gene set enrichment analysis plots
+# ==================================
 #
-# This script subsets the differential expresssion results and saves
-# a table for each contrast containing only the significantly
-# differentially expressed p-sites.
+# This script generates the plots to visualize the results of the GSEA
 
 import os
 
@@ -37,13 +35,13 @@ dir_ = 'results/3_gsea'
 def titlemaker(s):
     '''
     Creates the figure title based on the file name of the PIANO result table.
-    
+
     :arg str s:
-        The file name containing the information about directionality class and 
+        The file name containing the information about directionality class and
         direction (if applicable). It is assumed to have the format:
         "{1}_{2}_rank.txt" where {1} denotes the directionality class ("dist",
         "mix" or "non") and {2} the direction ("up", "dw" or none)
-    
+
     :return str:
         The formatted title for the figure
     '''

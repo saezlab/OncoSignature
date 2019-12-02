@@ -15,12 +15,11 @@
 # A full copy of the GNU General Public License can be found on
 # http://www.gnu.org/licenses/.
 #
-# Significant differential phosphorylation
-# ========================================
+# Kinase-substrate enrichment analysis
+# ====================================
 #
-# This script subsets the differential expresssion results and saves
-# a table for each contrast containing only the significantly
-# differentially expressed p-sites.
+# This script computes the kinase enrichment based on the differential
+# phosphoproteomics data
 
 import os
 
