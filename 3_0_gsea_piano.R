@@ -93,9 +93,8 @@ run_piano <- function(methods, ttop, gset, ncores=1){
 map_table_path <- paste(data_dir, mapping_file, sep='/')
 
 if (file.exists(map_table_path)){
-    map_table <- read.csv(map_table_path, stringsAsFactors=F)
-}
-else{
+    map_table <- read.csv(map_table_path, stringsAsFactors=F, row.names = 1)
+} else {
     # - MSigDB genesets (manually downloaded)
     msigdb_path_to_gsymbol <- read.csv(paste(data_dir, msigdb_file, sep='/'),
                                        stringsAsFactors=F)
