@@ -72,7 +72,7 @@ standarize_name <- function(col){
 ifelse(!dir.exists(out_dir), dir.create(out_dir, recursive=TRUE), FALSE)
 
 # Set up CWD and load raw data
-raw_data <- read_delim(paste(data_dir, fname, sep='/'), sep='\t',
+raw_data <- read_delim(paste(data_dir, dataf, sep='/'), '\t',
                        escape_double=FALSE, trim_ws=TRUE, na='NaN')
 raw_data <- as.data.frame(raw_data)
 
@@ -135,3 +135,4 @@ magicPlotMaker(df_bcor, outpath = subdir, w=15, h=15,
 
 # Save the normalized data
 write.csv(df_bcor, paste(data_dir, 'norm_data.csv', sep='/'))
+
