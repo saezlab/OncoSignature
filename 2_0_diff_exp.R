@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -27,19 +27,24 @@ library(readr)
 
 #----------------------------------- INPUT -----------------------------------#
 data_dir <- 'data'
-dataf <- 'norm_data.csv'
+dataf_ex <- 'norm_data_ex.csv'
+dataf_cl <- 'norm_data_cl.csv'
 annotf <- 'response.csv'
 
 out_dir <- 'results'
 #-----------------------------------------------------------------------------#
 
 # Loading the data and annotation
-data <- read.csv(paste(data_dir, dataf, sep='/'), row.names=1)
+data_ex <- read.csv(paste(data_dir, dataf_ex, sep='/'), row.names=1)
+data_cl <- read.csv(paste(data_dir, dataf_cl, sep='/'), row.names=1)
 targets <- read_csv(paste(data_dir, annotf, sep='/'))
 targets <- as.data.frame(targets[complete.cases(targets$annot), ])
 
+
+# ============================= Ex-vivo samples ============================= #
 # Defining contrasts
-f <- factor(targets$condition, levels=unique(targets$condition))
+subtargets = targets[startsWith(targets$sample, 'EX'), ]
+f <- factor(subtargets$condition, levels=unique(subtargets$condition))
 design <- model.matrix(~0 + f)
                             # Effect of treatment in responders
 cont.matrix <- makeContrasts(R_TvsR_U=fR_T - fR_U,
@@ -50,12 +55,69 @@ cont.matrix <- makeContrasts(R_TvsR_U=fR_T - fR_U,
                              levels=design)
 
 # Differential expression analysis
-pfit <- lmFit(data, design)
+pfit <- lmFit(data_ex, design)
 pfit <- contrasts.fit(pfit, cont.matrix)
 pfit <- eBayes(pfit)
 
 # Saving the results
-subdir <- paste(out_dir, '2_diff_exp', sep='/')
+subdir <- paste(out_dir, '2_diff_exp_ex', sep='/')
+ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
+
+for(c in colnames(cont.matrix)){
+    ttop <- topTable(pfit, coef=c, adjust='fdr', n=nrow(pfit))
+    write.csv(ttop, paste(subdir, paste(c, 'ttop.csv', sep='_'), sep='/'))
+}
+
+# ============================ Cell line samples ============================ #
+# Grouped
+# Defining contrasts
+subtargets = targets[!startsWith(targets$sample, 'EX'), ]
+f <- factor(subtargets$condition, levels=unique(subtargets$condition))
+design <- model.matrix(~0 + f)
+                             # Effect of treatment in responders
+cont.matrix <- makeContrasts(R_TvsR_U=fR_T - fR_U,
+                             # Effect pf treatment in non-responders
+                             NR_TvsNR_U=fNR_T - fNR_U,
+                             # Responders vs. non-responders prior to treatment
+                             R_UvsNR_U=fR_U - fNR_U,
+                             levels=design)
+
+# Differential expression analysis
+pfit <- lmFit(data_cl, design)
+pfit <- contrasts.fit(pfit, cont.matrix)
+pfit <- eBayes(pfit)
+
+# Saving the results
+subdir <- paste(out_dir, '2_diff_exp_cl', sep='/')
+ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
+
+for(c in colnames(cont.matrix)){
+    ttop <- topTable(pfit, coef=c, adjust='fdr', n=nrow(pfit))
+    write.csv(ttop, paste(subdir, paste(c, 'ttop.csv', sep='_'), sep='/'))
+}
+# By individual cell-lines
+aux <- gsub('_._', '_', colnames(data_cl))
+f <- factor(aux, levels=unique(aux))
+design <- model.matrix(~0 + f)
+cont.matrix <- makeContrasts(# Effect of treatment in GDM1
+                             GDM1_TvsGDM1_U=fGDM1_T - fGDM1_U,
+                             # Effect of treatment in MV411
+                             MV411_TvsMV411_U=fMV411_T - fMV411_U,
+                             # Effect of treatment in PL21
+                             PL21_TvsPL21_U=fPL21_T - fPL21_U,
+                             # Effect of treatment in NOMO1
+                             NOMO1_TvsNOMO1_U=fNOMO1_T - fNOMO1_U,
+                             # Effect of treatment in PL21
+                             MV411_UvsPL21_U=fMV411_U - fPL21_U,
+                             levels=design)
+
+# Differential expression analysis
+pfit <- lmFit(data_cl, design)
+pfit <- contrasts.fit(pfit, cont.matrix)
+pfit <- eBayes(pfit)
+
+# Saving the results
+subdir <- paste(out_dir, '2_diff_exp_cl', sep='/')
 ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
 
 for(c in colnames(cont.matrix)){
