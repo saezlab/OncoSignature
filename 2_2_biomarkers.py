@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -52,7 +52,7 @@ import pandas as pd
 from data_tools.databases import up_map
 
 #----------------------------------- INPUT -----------------------------------#
-dir_ = 'results/2_diff_exp'
+parent_dir = 'results'
 #-----------------------------------------------------------------------------#
 
 
@@ -100,43 +100,46 @@ def translate(ids):
                       up_map([i.split('_')[0]]).iloc[0, 1]) for i in ids]
 
 
+usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
+           if d.startswith('2_diff_exp')]
 
-# Reading DEX results
-fnames = [fname for fname in os.listdir(dir_) if fname.endswith('_ttop.csv')]
-ttops = dict((fname.replace('_ttop.csv', ''),
-              pd.read_csv(os.path.join(dir_, fname), index_col=0))
-             for fname in fnames)
+for dir_ in usedirs:
+    # Reading DEX results
+    fnames = [fname for fname in os.listdir(dir_) if fname.endswith('_ttop.csv')]
+    ttops = dict((fname.replace('_ttop.csv', ''),
+                  pd.read_csv(os.path.join(dir_, fname), index_col=0))
+                 for fname in fnames)
 
-# Extracting the significant p-sites
-sig_sites = dict((k, dict([('up', set()),
-                           ('down', set())])) for k in ttops.keys())
+    # Extracting the significant p-sites
+    sig_sites = dict((k, dict([('up', set()),
+                               ('down', set())])) for k in ttops.keys())
 
-for k, v in ttops.items():
-    sig = v.loc[is_significant(v[['P.Value', 'logFC']]), :]
-    sig_sites[k]['up'].update(sig.index[sig['logFC'] > 0])
-    sig_sites[k]['down'].update(sig.index[sig['logFC'] < 0])
+    for k, v in ttops.items():
+        sig = v.loc[is_significant(v[['P.Value', 'logFC']]), :]
+        sig_sites[k]['up'].update(sig.index[sig['logFC'] > 0])
+        sig_sites[k]['down'].update(sig.index[sig['logFC'] < 0])
 
-# Case 1.1
-c11 = (sig_sites['R_TvsR_U']['down']
-       - sig_sites['NR_TvsNR_U']['down']
-       & sig_sites['R_UvsNR_U']['up'])
+    # Case 1.1
+    c11 = (sig_sites['R_TvsR_U']['down']
+           - sig_sites['NR_TvsNR_U']['down']
+           & sig_sites['R_UvsNR_U']['up'])
 
-# Case 1.2
-c12 = (sig_sites['R_TvsR_U']['up']
-       - sig_sites['NR_TvsNR_U']['up']
-       & sig_sites['R_UvsNR_U']['down'])
+    # Case 1.2
+    c12 = (sig_sites['R_TvsR_U']['up']
+           - sig_sites['NR_TvsNR_U']['up']
+           & sig_sites['R_UvsNR_U']['down'])
 
-# Case 2.1
-c21 = (sig_sites['NR_TvsNR_U']['down']
-       - sig_sites['R_TvsR_U']['down']
-       & sig_sites['R_UvsNR_U']['down'])
+    # Case 2.1
+    c21 = (sig_sites['NR_TvsNR_U']['down']
+           - sig_sites['R_TvsR_U']['down']
+           & sig_sites['R_UvsNR_U']['down'])
 
-# Case 2.2
-c22 = (sig_sites['NR_TvsNR_U']['up']
-       - sig_sites['R_TvsR_U']['up']
-       & sig_sites['R_UvsNR_U']['up'])
+    # Case 2.2
+    c22 = (sig_sites['NR_TvsNR_U']['up']
+           - sig_sites['R_TvsR_U']['up']
+           & sig_sites['R_UvsNR_U']['up'])
 
-# Printing the results
-if __name__ == '__main__':
-    print(__doc__.format(*[', '.join(x) if x else 'None'
-                           for x in map(translate, [c11, c12, c21, c22])]))
+    # Printing the results
+    if __name__ == '__main__':
+        print(__doc__.format(*[', '.join(x) if x else 'None'
+                               for x in map(translate, [c11, c12, c21, c22])]))
