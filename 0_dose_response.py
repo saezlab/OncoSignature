@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -38,7 +38,10 @@ data_dir = 'data'
 res_dir = 'results'
 resp_data = 'raw_survival_data.tab'
 
-n = 6 # Number of columns on the multiplots
+n = 4 # Number of columns on the multiplots
+# Selected samples
+use_samples = [6, 8, 9, 13, 14, 15, 18, 19, 24, 25,
+               27, 28, 29, 34, 36, 39, 40, 41, 42, 44]
 #-----------------------------------------------------------------------------#
 
 def plot(ax, df):
@@ -90,12 +93,14 @@ for k, v in norm_samples.items():
 norm_samples[1][norm_samples[1] > 20] = np.nan
 norm_samples[33][norm_samples[33] > 2] = np.nan
 
+
+
 xmin = min(df_raw['slx dose (nM)'].unique()[2:])
 xmax = max(df_raw['slx dose (nM)'].unique()[2:])
 
-groups = chunk_this(norm_samples.keys(), n)
+groups = chunk_this(use_samples, n)
 m = len(groups)
-
+groups
 fig, ax = plt.subplots(m, n, figsize=(3 * n, 3 * m),
                        sharex=True, sharey=True)
 
@@ -169,7 +174,7 @@ for j, g in enumerate(groups):
                       '--r', alpha=.5)
 
         ax[j, i].set_title('Sample #%d' %s)
-        ax[j, i].text(0, 1.2, r'$k=%.2f$ | $m=%.2f$ | $n=%.2f$'
+        ax[j, i].text(0, 1.2, r'$k=%.1f$ | $m=%.2f$ | $n=%.2f$'
                       %tuple(model.params), fontsize=9)
 
         if j + 1 == m:
@@ -192,9 +197,9 @@ fig, ax = plt.subplots(figsize=(8, 5))
 xmin = min(fit_params.keys())
 xmax = max(fit_params.keys())
 
-rng = range(xmin, xmax + 1)
+rng = range(len(fit_params))
 
-for k, v in fit_params.items():
+for i, (k, v) in enumerate(fit_params.items()):
 
     val = ec50s[k]
 
@@ -204,10 +209,10 @@ for k, v in fit_params.items():
     else:
         c = 'g'
 
-    ax.bar(k, val if val != np.inf else 2e96, color=c)
+    ax.bar(i, val if val != np.inf else 2e96, color=c)
 
-ax.plot([rng[0], rng[-1]], [1e3, 1e3], 'k--')
-ax.set_xlim(xmin - 1, xmax + 1)
+ax.plot([rng[0] - 1, rng[-1] + 1], [1e3, 1e3], 'k--')
+ax.set_xlim(rng[0] - 1, rng[-1] + 1)
 
 ax.set_yscale('log')
 ax.set_ylim(0, 1e5)
@@ -226,7 +231,8 @@ fig.tight_layout()
 fig.savefig(os.path.join(res_dir, 'ec50s.pdf'))
 
 # Generating annotation file for further analyses
-sample_class = pd.DataFrame(index=range(1, len(ec50s)), columns=['sample', 'condition'])
+sample_class = pd.DataFrame(index=range(1, len(ec50s)),
+                            columns=['sample', 'condition'])
 
 for k, v in ec50s.items():
     sample_class.loc[k, 'sample'] = str(k)
@@ -236,9 +242,12 @@ missing = [1, 4, 7, 12, 26]
 samples = pd.DataFrame(ec50s.values(), index=ec50s.keys(), columns=['EC50'])
 
 for s in missing:
-    samples.drop(s, inplace=True)
 
-samples
+    try:
+        samples.drop(s, inplace=True)
+
+    except KeyError:
+        pass
 
 #samples['logEC50'] = np.log10(samples.EC50)
 #def tval(x, ref=1e3):
