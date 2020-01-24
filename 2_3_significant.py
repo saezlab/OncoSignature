@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -30,30 +30,35 @@ from data_tools.databases import up_map
 from data_tools.iterables import chunk_this
 
 #----------------------------------- INPUT -----------------------------------#
-dir_ = 'results/2_diff_exp'
+parent_dir = 'results'
 #-----------------------------------------------------------------------------#
 
-files = [f for f in os.listdir(dir_)
-         if (f.endswith('_ttop.csv') and not f.startswith('sig_'))]
+usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
+           if d.startswith('2_diff_exp')]
 
-for f in files:
-    df = pd.read_csv(os.path.join(dir_, f), index_col=0)
-    sig = [a and b for (a, b) in zip(abs(df['logFC']) >= 1,
-                                     df['P.Value'] <= 0.05)]
-    df = df.loc[sig, :]
+for dir_ in usedirs:
 
-    df.index
+    files = [f for f in os.listdir(dir_)
+             if (f.endswith('_ttop.csv') and not f.startswith('sig_'))]
 
-    ups = list(set([i.split('_')[0] for i in df.index]))
+    for f in files:
+        df = pd.read_csv(os.path.join(dir_, f), index_col=0)
+        sig = [a and b for (a, b) in zip(abs(df['logFC']) >= 1,
+                                         df['P.Value'] <= 0.05)]
+        df = df.loc[sig, :]
 
-    mapper = dict()
+        df.index
 
-    for ch in chunk_this(ups, 1000):
-        aux = up_map(ch)
-        mapper.update(aux.set_index('ACC').to_dict()['GENENAME'])
+        ups = list(set([i.split('_')[0] for i in df.index]))
 
-    df.index = ['_'.join([mapper[i.split('_')[0]],
-                          '_'.join(i.split('_')[1:])])
-                for i in df.index]
+        mapper = dict()
 
-    df.to_csv(os.path.join(dir_, 'sig_' + f))
+        for ch in chunk_this(ups, 1000):
+            aux = up_map(ch)
+            mapper.update(aux.set_index('ACC').to_dict()['GENENAME'])
+
+        df.index = ['_'.join([mapper[i.split('_')[0]],
+                              '_'.join(i.split('_')[1:])])
+                    for i in df.index]
+
+        df.to_csv(os.path.join(dir_, 'sig_' + f))
