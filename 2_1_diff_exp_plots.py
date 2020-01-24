@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -30,34 +30,36 @@ import matplotlib.pyplot as plt
 from data_tools.plots import volcano
 
 #----------------------------------- INPUT -----------------------------------#
-dir_ = 'results/2_diff_exp'
+parent_dir = 'results'
 #-----------------------------------------------------------------------------#
+usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
+           if d.startswith('2_diff_exp')]
 
+for dir_ in usedirs:
+    # Loading the results from the differential expression analysis
+    files = [f for f in os.listdir(dir_) if f.endswith('_ttop.csv')]
 
-# Loading the results from the differential expression analysis
-files = [f for f in os.listdir(dir_) if f.endswith('_ttop.csv')]
+    for f in files:
+        fname = f.replace('_ttop.csv', '')
+        name = ' vs. '.join(fname.split('vs'))
 
-for f in files:
-    fname = f.replace('_ttop.csv', '')
-    name = ' vs. '.join(fname.split('vs'))
+        df = pd.read_csv(os.path.join(dir_, f), index_col=0)
 
-    df = pd.read_csv(os.path.join(dir_, f), index_col=0)
+        # Volcano plot
+        volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
+                filename=os.path.join(dir_, '%s.pdf' % fname))
+        volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
+                filename=os.path.join(dir_, '%s.png' % fname))
 
-    # Volcano plot
-    volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
-            filename=os.path.join(dir_, '%s.pdf' % fname))
-    volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
-            filename=os.path.join(dir_, '%s.png' % fname))
+        # p-value histogram
+        fig, ax = plt.subplots()
 
-    # p-value histogram
-    fig, ax = plt.subplots()
+        ax.hist(df['P.Value'].dropna(), bins=100)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel('P.Value')
+        ax.set_ylabel('Frequency')
+        ax.set_title('%s : p-value histogram' % name)
 
-    ax.hist(df['P.Value'].dropna(), bins=100)
-    ax.set_xlim(0, 1)
-    ax.set_xlabel('P.Value')
-    ax.set_ylabel('Frequency')
-    ax.set_title('%s : p-value histogram' % name)
+        fig.tight_layout()
 
-    fig.tight_layout()
-
-    fig.savefig(os.path.join(dir_, '%s_pval_hist.pdf' % fname))
+        fig.savefig(os.path.join(dir_, '%s_pval_hist.pdf' % fname))
