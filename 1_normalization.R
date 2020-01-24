@@ -102,13 +102,23 @@ raw_df = raw_df[, targets$sample]
 # Consider zeroes as NaN
 raw_df[raw_df == 0] <- NA
 
-write.csv(raw_df, paste(data_dir, 'raw.csv', sep='/'))
+raw_df_ex = raw_df[, startsWith(colnames(raw_df), 'EX')]
+raw_df_cl = raw_df[, !startsWith(colnames(raw_df), 'EX')]
+
+write.csv(raw_df_ex, paste(data_dir, 'raw_ex.csv', sep='/'))
+write.csv(raw_df_cl, paste(data_dir, 'raw_cl.csv', sep='/'))
 
 # Do the plots
-subdir <- paste(out_dir, '1_log2', sep='/')
+subdir <- paste(out_dir, '1_log2_ex', sep='/')
 ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
 
-magicPlotMaker(log2(raw_df), outpath = subdir, w=15, h=15,
+magicPlotMaker(log2(raw_df_ex), outpath = subdir, w=15, h=15,
+               targets=targets[, c('sample', 'condition')])
+
+subdir <- paste(out_dir, '1_log2_cl', sep='/')
+ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
+
+magicPlotMaker(log2(raw_df_cl), outpath = subdir, w=15, h=15,
                targets=targets[, c('sample', 'condition')])
 
 # Normalizing and removing batch effect
@@ -126,13 +136,21 @@ for(b in unique(batches)){
 
 df_bcor <- as.data.frame(removeBatchEffect(df_norm, batch=batches))
 
+df_bcor_ex = df_bcor[, startsWith(colnames(df_bcor), 'EX')]
+df_bcor_cl = df_bcor[, !startsWith(colnames(df_bcor), 'EX')]
+
 # Do the plots
-subdir <- paste(out_dir, '1_norm', sep='/')
+subdir <- paste(out_dir, '1_norm_ex', sep='/')
 ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
 
-magicPlotMaker(df_bcor, outpath = subdir, w=15, h=15,
+magicPlotMaker(df_bcor_ex, outpath = subdir, w=15, h=15,
+               targets=targets[, c('sample', 'condition')])
+subdir <- paste(out_dir, '1_norm_cl', sep='/')
+ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
+
+magicPlotMaker(df_bcor_cl, outpath = subdir, w=15, h=15,
                targets=targets[, c('sample', 'condition')])
 
 # Save the normalized data
-write.csv(df_bcor, paste(data_dir, 'norm_data.csv', sep='/'))
+write.csv(df_bcor_cl, paste(data_dir, 'norm_data_cl.csv', sep='/'))
 
