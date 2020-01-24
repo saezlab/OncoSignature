@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -28,7 +28,7 @@ library(biomaRt)
 library(dplyr)
 
 #----------------------------------- INPUT -----------------------------------#
-dex_dir <- 'results/2_diff_exp'
+res_dir <- 'results'
 out_dir <- 'results/3_gsea'
 
 data_dir <- 'data'
@@ -123,82 +123,86 @@ if (file.exists(map_table_path)){
 
 gset <- loadGSC(map_table)
 # <<<--------------------------------------------------------------------------
+dex_dirs <- list.dirs('results')[grep('2_diff_exp', list.dirs('results'))]
 
-# Find all table top files (contrasts) from which GSEA is to be run
-all_files <- dir(dex_dir)
-files <- all_files[endsWith(all_files, '_ttop.csv')
-                   & !startsWith(all_files, 'sig_')]
-
-for(f in files){
-    name <- paste(strsplit(f, 'vs')[[1]][1:2], collapse='_')
-    name <- gsub('_ttop.csv', '', name)
-
-    print(paste('Computing GSEA for contrast:', name, sep=' '))
-
-    # Set-up the subdirectory
-    subdir <- paste(out_dir, name, sep='/')
-    ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
-
-    # Loading data
-    df <- as.data.frame(read.csv(paste(dex_dir, f, sep='/'),
-                                 row.names=1))
-
-    # Running piano
-    piano_results <- run_piano(methods, df, gset, ncores = 4)
-
-    # Saving the environment
-    save(list=ls(all.names=T),
-         file=paste(subdir, paste(name, 'GSEA.RData', sep='_'), sep='/'),
-         envir=.GlobalEnv)
-
-    # Consensus heatmap
-    pdf(paste(subdir, 'cons_hmap.pdf', sep='/'), width=150, height=200)
-    ch <- consensusHeatmap(piano_results, cutoff=50, method='median',
-                          ncharLabel=50, cellnote='medianPvalue',
-                          cex=0.2, plot=T)
-    dev.off()
-
-    # Consensus scores (distinct-directional)
-    cs_dist_up <- piano::consensusScores(piano_results,
-                                        class='distinct',
-                                        direction='up', plot=F)
-    cs_dist_dw <- piano::consensusScores(piano_results,
-                                        class='distinct',
-                                        direction='down', plot=F)
-
-    write.table(cs_dist_up$rankMat, paste(subdir, 'dist_up_rank.txt', sep='/'),
-                sep='\t', quote=F)
-    write.table(cs_dist_dw$rankMat, paste(subdir, 'dist_dw_rank.txt', sep='/'),
-                sep='\t', quote=F)
-    write.table(cs_dist_up$pMat, paste(subdir, 'dist_up_pval.txt', sep='/'),
-                sep='\t', quote=F)
-    write.table(cs_dist_dw$pMat, paste(subdir, 'dist_dw_pval.txt', sep='/'),
-                sep='\t', quote=F)
-
-    # Consensus scores (mixed-directional)
-    cs_mix_up <- piano::consensusScores(piano_results,
-                                       class='mixed',
-                                       direction='up', plot=F)
-    cs_mix_dw <- piano::consensusScores(piano_results, class='mixed',
-                                        direction='down', plot=F)
-
-    write.table(cs_mix_up$rankMat, paste(subdir, 'mix_up_rank.txt', sep='/'),
-                sep='\t', quote=F)
-    write.table(cs_mix_dw$rankMat, paste(subdir, 'mix_dw_rank.txt', sep='/'),
-                sep='\t', quote=F)
-
-    write.table(cs_mix_up$pMat, paste(subdir, 'mix_up_pval.txt', sep='/'),
-                sep='\t', quote=F)
-    write.table(cs_mix_dw$pMat, paste(subdir, 'mix_dw_pval.txt', sep='/'),
-                sep='\t', quote=F)
-
-    # Consensus scores (non-directional)
-    cs_non <- piano::consensusScores(piano_results,
-                                    class='non', plot=F)
-
-    write.table(cs_non$rankMat, paste(subdir, 'non_rank.txt', sep='/'),
-                sep='\t', quote=F)
-
-    write.table(cs_non$pMat, paste(subdir, 'non_pval.txt', sep='/'), sep='\t',
-                quote=F)
+for (dex_dir in dex_dirs){
+    # Find all table top files (contrasts) from which GSEA is to be run
+    all_files <- dir(dex_dir)
+    files <- all_files[endsWith(all_files, '_ttop.csv')
+                       & !startsWith(all_files, 'sig_')]
+    sdir <- as.character(strsplit(dex_dir, '_')[[1]][4])
+    
+    for(f in files){
+        name <- paste(strsplit(f, 'vs')[[1]][1:2], collapse='_')
+        name <- gsub('_ttop.csv', '', name)
+    
+        print(paste('Computing GSEA for contrast:', name, sep=' '))
+    
+        # Set-up the subdirectory
+        subdir <- paste(out_dir, sdir, name, sep='/')
+        ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
+    
+        # Loading data
+        df <- as.data.frame(read.csv(paste(dex_dir, f, sep='/'),
+                                     row.names=1))
+    
+        # Running piano
+        piano_results <- run_piano(methods, df, gset, ncores = 4)
+    
+        # Saving the environment
+        save(list=ls(all.names=T),
+             file=paste(subdir, paste(name, 'GSEA.RData', sep='_'), sep='/'),
+             envir=.GlobalEnv)
+    
+        # Consensus heatmap
+        pdf(paste(subdir, 'cons_hmap.pdf', sep='/'), width=150, height=200)
+        ch <- consensusHeatmap(piano_results, cutoff=50, method='median',
+                              ncharLabel=50, cellnote='medianPvalue',
+                              cex=0.2, plot=T)
+        dev.off()
+    
+        # Consensus scores (distinct-directional)
+        cs_dist_up <- piano::consensusScores(piano_results,
+                                            class='distinct',
+                                            direction='up', plot=F)
+        cs_dist_dw <- piano::consensusScores(piano_results,
+                                            class='distinct',
+                                            direction='down', plot=F)
+    
+        write.table(cs_dist_up$rankMat, paste(subdir, 'dist_up_rank.txt', sep='/'),
+                    sep='\t', quote=F)
+        write.table(cs_dist_dw$rankMat, paste(subdir, 'dist_dw_rank.txt', sep='/'),
+                    sep='\t', quote=F)
+        write.table(cs_dist_up$pMat, paste(subdir, 'dist_up_pval.txt', sep='/'),
+                    sep='\t', quote=F)
+        write.table(cs_dist_dw$pMat, paste(subdir, 'dist_dw_pval.txt', sep='/'),
+                    sep='\t', quote=F)
+    
+        # Consensus scores (mixed-directional)
+        cs_mix_up <- piano::consensusScores(piano_results,
+                                           class='mixed',
+                                           direction='up', plot=F)
+        cs_mix_dw <- piano::consensusScores(piano_results, class='mixed',
+                                            direction='down', plot=F)
+    
+        write.table(cs_mix_up$rankMat, paste(subdir, 'mix_up_rank.txt', sep='/'),
+                    sep='\t', quote=F)
+        write.table(cs_mix_dw$rankMat, paste(subdir, 'mix_dw_rank.txt', sep='/'),
+                    sep='\t', quote=F)
+    
+        write.table(cs_mix_up$pMat, paste(subdir, 'mix_up_pval.txt', sep='/'),
+                    sep='\t', quote=F)
+        write.table(cs_mix_dw$pMat, paste(subdir, 'mix_dw_pval.txt', sep='/'),
+                    sep='\t', quote=F)
+    
+        # Consensus scores (non-directional)
+        cs_non <- piano::consensusScores(piano_results,
+                                        class='non', plot=F)
+    
+        write.table(cs_non$rankMat, paste(subdir, 'non_rank.txt', sep='/'),
+                    sep='\t', quote=F)
+    
+        write.table(cs_non$pMat, paste(subdir, 'non_pval.txt', sep='/'), sep='\t',
+                    quote=F)
+    }
 }
