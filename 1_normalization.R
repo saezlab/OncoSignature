@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -152,5 +152,6 @@ magicPlotMaker(df_bcor_cl, outpath = subdir, w=15, h=15,
                targets=targets[, c('sample', 'condition')])
 
 # Save the normalized data
+write.csv(df_bcor_ex, paste(data_dir, 'norm_data_ex.csv', sep='/'))
 write.csv(df_bcor_cl, paste(data_dir, 'norm_data_cl.csv', sep='/'))
 
