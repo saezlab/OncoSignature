@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -33,18 +33,20 @@ from data_tools.databases import up_map
 
 #----------------------------------- INPUT -----------------------------------#
 data_dir = 'data'
-dex_dir = 'results/2_diff_exp'
-out_dir = 'results/4_ksea'
+p_dex_dir = 'results'
+p_out_dir = 'results/4_ksea'
 
 # If exists, reads it, otherwise writes it
-adj_file = 'ks_adj_281119.csv'
+adj_file = 'ks_adj_270120.csv'
+
+pval_thr = 0.05
 #-----------------------------------------------------------------------------#
 
 # Loading kinase-substrate network
 adj_path = os.path.join(data_dir, adj_file)
 
 if os.path.exists(adj_path):
-    ks_adj = pd.read_csv(adj_path)
+    ks_adj = pd.read_csv(adj_path, index_col=0)
 
 # Download the kinase-substrate interactions table from OmniPath
 else:
@@ -66,42 +68,45 @@ else:
 
     ks_adj.to_csv(adj_path)
 
-ttop_files = [f for f in os.listdir(dex_dir)
-              if (f.endswith('_ttop.csv') and not f.startswith('sig_'))]
-ttops = dict([f.replace('_ttop.csv', ''), pd.read_csv(os.path.join(dex_dir, f),
-                                                      index_col=0,
-                                                      usecols=[0, 1])]
-              for f in ttop_files)
+usedirs = [os.path.join(p_dex_dir, d) for d in os.listdir(p_dex_dir)
+           if d.startswith('2_diff_exp')]
 
-results = {}
+for dex_dir in usedirs:
+    ttop_files = [f for f in os.listdir(dex_dir)
+                  if (f.endswith('_ttop.csv') and not f.startswith('sig_'))]
+    ttops = dict([f.replace('_ttop.csv', ''),
+                  pd.read_csv(os.path.join(dex_dir, f), index_col=0,
+                              usecols=[0, 1])] for f in ttop_files)
 
-for k, v in ttops.items():
-    aux = v.dropna().copy()
-    aux.index = [i.split('__')[0] for i in aux.index]
+    results = {}
 
-    score, pval = kinact.ksea.ksea_mean(aux, ks_adj, minimum_set_size=5)
-    results[k] = pd.DataFrame({'score':score, 'pval':pval})
+    for k, v in ttops.items():
+        aux = v.dropna().copy()
+        aux.index = [i.split('__')[0] for i in aux.index]
 
-pval_thr = 0.05
+        score, pval = kinact.ksea.ksea_mean(aux, ks_adj, minimum_set_size=5)
+        results[k] = pd.DataFrame({'score':score, 'pval':pval})
 
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
+    out_dir = os.path.join(p_out_dir, dex_dir.split('_')[-1])
 
-for k, v in results.items():
-    title = 'KSEA {} vs. {}'.format(*k.split('vs'))
-    print('Significant kinases of', title)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
-    idmap = up_map([i.split('_')[0] for i in v.index])
-    v.index = [i.replace(i.split('_')[0],
-                         idmap.loc[idmap['ACC'] == i.split('_')[0],
-                                   'GENENAME'].values[0]) for i in v.index]
+    for k, v in results.items():
+        title = 'KSEA {} vs. {}'.format(*k.split('vs'))
+        print('Significant kinases of', title)
 
-    print(v[v['pval'] <= pval_thr])
+        idmap = up_map([i.split('_')[0] for i in v.index])
+        v.index = [i.replace(i.split('_')[0],
+                             idmap.loc[idmap['ACC'] == i.split('_')[0],
+                                       'GENENAME'].values[0]) for i in v.index]
 
-    plot = volcano(v['score'], -np.log10(v['pval']), thr_fc=1, thr_pval=pval_thr,
-                   title=title)
-    ax = plot.gca()
-    ax.set_xlabel('KSEA score')
-    plot.savefig(os.path.join(out_dir, 'ksea_%s.pdf' %k))
+        print(v[v['pval'] <= pval_thr])
 
-    v.to_csv(os.path.join(out_dir, '%s_KSEA_results.csv' %k))
+        plot = volcano(v['score'], -np.log10(v['pval']), thr_fc=1,
+                       thr_pval=pval_thr, title=title)
+        ax = plot.gca()
+        ax.set_xlabel('KSEA score')
+        plot.savefig(os.path.join(out_dir, 'ksea_%s.pdf' %k))
+
+        v.to_csv(os.path.join(out_dir, '%s_KSEA_results.csv' %k))
