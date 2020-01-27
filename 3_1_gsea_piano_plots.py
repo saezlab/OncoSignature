@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Nicolàs Palacio
+# Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
 #
@@ -75,58 +75,62 @@ def titlemaker(s):
             else '%s-directional individual ranks based on p-values' %c)
 
 
-subdirs = list(os.walk(dir_))[0][1]
-venn_sets = {'NR up':set(),
-             'NR down':set(),
-             'R up':set(),
-             'R down':set()}
+supdirs = list(os.walk(dir_))[0][1]
 
-for sdir in subdirs:
-    ssdir = os.path.join(dir_, sdir)
+for supdir in supdirs:
+    subdirs = list(os.listdir(os.path.join(dir_, supdir)))
 
-    # Listing all files containing the rank matrices
-    files = [f for f in os.listdir(ssdir) if f.endswith('_rank.txt')]
+    venn_sets = {'NR up':set(),
+                 'NR down':set(),
+                 'R up':set(),
+                 'R down':set()}
+
+    for sdir in subdirs:
+        ssdir = os.path.join(dir_, supdir, sdir)
+
+        # Listing all files containing the rank matrices
+        files = [f for f in os.listdir(ssdir) if f.endswith('_rank.txt')]
 
 
-    for f in files:
-        df = pd.read_csv(os.path.join(ssdir, f), sep='\t')
-        height = len(df) / 5
+        for f in files:
+            df = pd.read_csv(os.path.join(ssdir, f), sep='\t')
+            height = len(df) / 5
 
-        fig = piano_consensus(df, figsize=[10, height], title=titlemaker(f),
-                              filename=os.path.join(ssdir,
-                                                    f.split('.')[0] + '.pdf'))
+            fig = piano_consensus(df, figsize=[10, height], title=titlemaker(f),
+                                  filename=os.path.join(ssdir,
+                                                        f.split('.')[0] + '.pdf'))
 
-        if sdir == 'NR_T_NR_U':
-            if f.endswith('up_rank.txt'):
-                venn_sets['NR up'].update(df.index.tolist())
+            if sdir == 'NR_T_NR_U':
+                if f.endswith('up_rank.txt'):
+                    venn_sets['NR up'].update(df.index.tolist())
 
-            elif f.endswith('dw_rank.txt'):
-                venn_sets['NR down'].update(df.index.tolist())
+                elif f.endswith('dw_rank.txt'):
+                    venn_sets['NR down'].update(df.index.tolist())
+
+                else:
+                    pass
+
+            elif sdir == 'R_T_R_U':
+                if f.endswith('up_rank.txt'):
+                    venn_sets['R up'].update(df.index.tolist())
+
+                elif f.endswith('dw_rank.txt'):
+                    venn_sets['R down'].update(df.index.tolist())
+
+                else:
+                    pass
 
             else:
                 pass
 
-        elif sdir == 'R_T_R_U':
-            if f.endswith('up_rank.txt'):
-                venn_sets['R up'].update(df.index.tolist())
 
-            elif f.endswith('dw_rank.txt'):
-                venn_sets['R down'].update(df.index.tolist())
+    print(venn_sets.keys())
 
-            else:
-                pass
+    aux = subsets(list(venn_sets.values()))
 
-        else:
-            pass
+    for k, v in aux.items():
+        print([list(venn_sets.keys())[i] for i, n in enumerate(k) if n == '1'])
+        print(v)
 
-
-print(venn_sets.keys())
-
-aux = subsets(list(venn_sets.values()))
-
-for k, v in aux.items():
-    print([list(venn_sets.keys())[i] for i, n in enumerate(k) if n == '1'])
-    print(v)
-
-venn(list(venn_sets.values()), list(venn_sets.keys()), title='GSEA overlaps',
-     filename=os.path.join(dir_, 'venn_piano.pdf'))
+    venn(list(venn_sets.values()), list(venn_sets.keys()), title='GSEA overlaps',
+         filename=os.path.join(dir_, supdir, 'venn_piano.pdf'))
