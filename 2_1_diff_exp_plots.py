@@ -37,7 +37,8 @@ usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
 
 for dir_ in usedirs:
     # Loading the results from the differential expression analysis
-    files = [f for f in os.listdir(dir_) if f.endswith('_ttop.csv')]
+    files = [f for f in os.listdir(dir_) if (f.endswith('_ttop.csv')
+                                             and not f.startswith('sig'))]
 
     for f in files:
         fname = f.replace('_ttop.csv', '')
@@ -48,8 +49,6 @@ for dir_ in usedirs:
         # Volcano plot
         volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
                 filename=os.path.join(dir_, '%s.pdf' % fname))
-        volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
-                filename=os.path.join(dir_, '%s.png' % fname))
 
         # p-value histogram
         fig, ax = plt.subplots()
@@ -63,3 +62,4 @@ for dir_ in usedirs:
         fig.tight_layout()
 
         fig.savefig(os.path.join(dir_, '%s_pval_hist.pdf' % fname))
+        plt.close('all')
