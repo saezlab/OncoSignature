@@ -40,6 +40,11 @@ data_cl <- read.csv(paste(data_dir, dataf_cl, sep='/'), row.names=1)
 targets <- read_csv(paste(data_dir, annotf, sep='/'))
 targets <- as.data.frame(targets[complete.cases(targets$annot), ])
 
+# Removing sample 34 from ex-vivo samples (borderline R, non-significantly
+# different from EC50 threshold)
+
+data_ex = data_ex[, !grepl('34', colnames(data_ex))]
+targets = targets[!grepl('34', targets$sample), ]
 
 # ============================= Ex-vivo samples ============================= #
 # Defining contrasts
