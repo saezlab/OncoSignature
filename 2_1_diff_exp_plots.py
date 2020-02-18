@@ -35,6 +35,10 @@ parent_dir = 'results'
 usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
            if d.startswith('2_diff_exp')]
 
+adj_txt_kwargs = dict(arrowprops=dict(zorder=4.5, color='r',
+                                      arrowstyle='->,head_length=0.2,\
+                                                  head_width=0.1'))
+
 for dir_ in usedirs:
     # Loading the results from the differential expression analysis
     files = [f for f in os.listdir(dir_) if (f.endswith('_ttop.csv')
@@ -48,7 +52,9 @@ for dir_ in usedirs:
 
         # Volcano plot
         volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
-                filename=os.path.join(dir_, '%s.pdf' % fname))
+                labels=df.index.values,
+                filename=os.path.join(dir_, '%s.pdf' % fname),
+                adj_txt_kwargs=adj_txt_kwargs)
 
         # p-value histogram
         fig, ax = plt.subplots()
