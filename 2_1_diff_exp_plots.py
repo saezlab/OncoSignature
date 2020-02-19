@@ -28,6 +28,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from data_tools.plots import volcano
+from data_tools.iterables import chunk_this
+from data_tools.databases import up_map
 
 #----------------------------------- INPUT -----------------------------------#
 parent_dir = 'results'
@@ -35,9 +37,26 @@ parent_dir = 'results'
 usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
            if d.startswith('2_diff_exp')]
 
+# Parameters to plot arrows between points and labels
 adj_txt_kwargs = dict(arrowprops=dict(zorder=4.5, color='r',
                                       arrowstyle='->,head_length=0.2,\
                                                   head_width=0.1'))
+# Downloading mapping table UniProt AC to GeneSymbol
+somefile = [f for f  in os.listdir(usedirs[0])
+            if (f.endswith('_ttop.csv') and not f.startswith('sig'))][0]
+somedf = pd.read_csv(os.path.join(usedirs[0], somefile), index_col=0)
+ids = list(set([i.split('_')[0] for i in somedf.index]))
+
+mapping = pd.Series(index=ids, name='GENENAME')
+# We chunk the requests in 1000-sized ids because server rejects otherwise
+for p in chunk_this(ids, 1000):
+    aux = up_map(p)
+    mapping[aux['ACC']] = aux['GENENAME']
+
+pd.isna(mapping).sum()
+# If no mapping available, go back to UniProt AC
+no_map = pd.isna(mapping)
+mapping[no_map] = mapping.index[no_map].tolist()
 
 for dir_ in usedirs:
     # Loading the results from the differential expression analysis
@@ -49,6 +68,11 @@ for dir_ in usedirs:
         name = ' vs. '.join(fname.split('vs'))
 
         df = pd.read_csv(os.path.join(dir_, f), index_col=0)
+
+        # Converting ids to genename
+        upids, residues = zip(*[i.split('_')[:2] for i in df.index])
+        mapped = [mapping[i] for i in upids]
+        df.index = ['_'.join([str(a), b]) for a, b in zip(mapped, residues)]
 
         # Volcano plot
         volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
