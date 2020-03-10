@@ -40,6 +40,8 @@ p_out_dir = 'results/4_ksea'
 adj_file = 'ks_adj_270120.csv'
 
 pval_thr = 0.05
+# Arguments for labels
+adj_txt_kwargs = dict(arrowprops=dict(zorder=4.5, color='k', arrowstyle='-'))
 #-----------------------------------------------------------------------------#
 
 # Loading kinase-substrate network
@@ -104,7 +106,8 @@ for dex_dir in usedirs:
         print(v[v['pval'] <= pval_thr])
 
         plot = volcano(v['score'], -np.log10(v['pval']), thr_fc=1,
-                       thr_pval=pval_thr, title=title)
+                       thr_pval=pval_thr, title=title, labels=v.index.tolist(),
+                       adj_txt_kwargs=adj_txt_kwargs)
         ax = plot.gca()
         ax.set_xlabel('KSEA score')
         plot.savefig(os.path.join(out_dir, 'ksea_%s.pdf' %k))
