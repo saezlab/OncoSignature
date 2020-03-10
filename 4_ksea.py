@@ -28,7 +28,6 @@ import numpy as np
 
 import kinact
 from data_tools.plots import volcano
-from data_tools.databases import op_kinase_substrate
 from data_tools.databases import up_map
 
 #----------------------------------- INPUT -----------------------------------#
@@ -36,8 +35,7 @@ data_dir = 'data'
 p_dex_dir = 'results'
 p_out_dir = 'results/4_ksea'
 
-# If exists, reads it, otherwise writes it
-adj_file = 'ks_adj_270120.csv'
+ks_file = 'opath_ptms_filtered_100320.csv'
 
 pval_thr = 0.05
 # Arguments for labels
@@ -45,30 +43,25 @@ adj_txt_kwargs = dict(arrowprops=dict(zorder=4.5, color='k', arrowstyle='-'))
 #-----------------------------------------------------------------------------#
 
 # Loading kinase-substrate network
-adj_path = os.path.join(data_dir, adj_file)
+ks_path = os.path.join(data_dir, ks_file)
 
-if os.path.exists(adj_path):
-    ks_adj = pd.read_csv(adj_path, index_col=0)
+ks_net = pd.read_csv(ks_path)
 
-# Download the kinase-substrate interactions table from OmniPath
-else:
-    ks_tab = op_kinase_substrate(gsymbols=False, incl_phosphatases=True)
+# Join phosphosite identifiers
+ks_net['psite'] = ['{}_{}{}'.format(*r[1].values[[1, 4, 5]])
+                   for r in ks_net.iterrows()]
 
-    # Join phosphosite identifiers
-    ks_tab['psite'] = ['{}_{}{}'.format(*r[1].values[1:4])
-                       for r in ks_tab.iterrows()]
+# Building adjacency matrix
+unique_kinases = ks_net['enzyme'].sort_values().unique()
+unique_psites = ks_net['psite'].sort_values().unique()
 
-    # Building adjacency matrix
-    unique_kinases = ks_tab['enzyme'].sort_values().unique()
-    unique_psites = ks_tab['psite'].sort_values().unique()
+ks_adj = pd.DataFrame(index=unique_psites, columns=unique_kinases)
 
-    ks_adj = pd.DataFrame(index=unique_psites, columns=unique_kinases)
+for k in unique_kinases:
+    targets = ks_net.loc[ks_net['enzyme'] == k, 'psite']
+    ks_adj.loc[targets, k] = 1
 
-    for k in unique_kinases:
-        targets = ks_tab.loc[ks_tab['enzyme'] == k, 'psite']
-        ks_adj.loc[targets, k] = 1
-
-    ks_adj.to_csv(adj_path)
+ks_adj.to_csv(ks_path.replace('.csv', '_adj.csv'))
 
 usedirs = [os.path.join(p_dex_dir, d) for d in os.listdir(p_dex_dir)
            if d.startswith('2_diff_exp')]
@@ -86,7 +79,7 @@ for dex_dir in usedirs:
         aux = v.dropna().copy()
         aux.index = [i.split('__')[0] for i in aux.index]
 
-        score, pval = kinact.ksea.ksea_mean(aux, ks_adj, minimum_set_size=5)
+        score, pval = kinact.ksea.ksea_mean(aux, ks_adj, minimum_set_size=3)
         results[k] = pd.DataFrame({'score':score, 'pval':pval})
 
     out_dir = os.path.join(p_out_dir, dex_dir.split('_')[-1])
@@ -107,7 +100,7 @@ for dex_dir in usedirs:
 
         plot = volcano(v['score'], -np.log10(v['pval']), thr_fc=1,
                        thr_pval=pval_thr, title=title, labels=v.index.tolist(),
-                       adj_txt_kwargs=adj_txt_kwargs)
+                       adj_txt_kwargs=adj_txt_kwargs, maxlabels=50)
         ax = plot.gca()
         ax.set_xlabel('KSEA score')
         plot.savefig(os.path.join(out_dir, 'ksea_%s.pdf' %k))
