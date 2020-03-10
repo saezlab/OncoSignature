@@ -38,9 +38,8 @@ usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
            if d.startswith('2_diff_exp')]
 
 # Parameters to plot arrows between points and labels
-adj_txt_kwargs = dict(arrowprops=dict(zorder=4.5, color='r',
-                                      arrowstyle='->,head_length=0.2,\
-                                                  head_width=0.1'))
+adj_txt_kwargs = dict(arrowprops=dict(zorder=4.5, color='k', arrowstyle='-'))
+
 # Downloading mapping table UniProt AC to GeneSymbol
 somefile = [f for f  in os.listdir(usedirs[0])
             if (f.endswith('_ttop.csv') and not f.startswith('sig'))][0]
