@@ -73,6 +73,25 @@ for(c in colnames(cont.matrix)){
     write.csv(ttop, paste(subdir, paste(c, 'ttop.csv', sep='_'), sep='/'))
 }
 
+# ALL treated vs ALL untreated
+aux <- as.character(lapply(subtargets$sample, function(x){
+    return(strsplit(x, '_')[[1]][3])
+}))
+f <- factor(aux, levels=unique(aux))
+design <- model.matrix(~0 + f)
+# Effect of treatment in responders
+cont.matrix <- makeContrasts(TvsU=fT - fU,
+                             levels=design)
+
+# Differential expression analysis
+pfit <- lmFit(data_ex, design)
+pfit <- contrasts.fit(pfit, cont.matrix)
+pfit <- eBayes(pfit)
+
+# Saving the results
+ttop <- topTable(pfit, coef='TvsU', adjust='fdr', n=nrow(pfit))
+write.csv(ttop, paste(subdir, 'TvsU_ttop.csv', sep='/'))
+
 # ============================ Cell line samples ============================ #
 # Grouped
 # Defining contrasts
