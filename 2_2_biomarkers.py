@@ -104,8 +104,12 @@ usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
            if d.startswith('2_diff_exp')]
 
 for dir_ in usedirs:
+    print('Biomarkers for %s'
+          % 'cell lines' if dir_.endswith('cl') else 'ex vivo samples')
+
     # Reading DEX results
-    fnames = [fname for fname in os.listdir(dir_) if fname.endswith('_ttop.csv')]
+    fnames = [fname for fname in os.listdir(dir_)
+              if (fname.endswith('_ttop.csv') and not fname.startswith('sig'))]
     ttops = dict((fname.replace('_ttop.csv', ''),
                   pd.read_csv(os.path.join(dir_, fname), index_col=0))
                  for fname in fnames)
