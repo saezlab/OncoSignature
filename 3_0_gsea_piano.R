@@ -21,7 +21,7 @@
 # This script computes the GSEA with 11 different methods and generates a
 # consensus score based on ranking
 
-library(parallel)
+library(snow)
 library(piano)
 library(ggplot2)
 library(biomaRt)
@@ -62,7 +62,7 @@ run_piano <- function(methods, ttop, gset, ncores=1){
     # Remove NaNs
     ttop <- ttop[complete.cases(ttop), ]
 
-    res <- mclapply(methods, function(m, ttop, gset){
+    res <- lapply(methods, function(m, ttop, gset){
         # Always use t-values except for the methods that do not support it
         if (m == 'fisher'
             | m == 'stouffer'
@@ -80,9 +80,9 @@ run_piano <- function(methods, ttop, gset, ncores=1){
         row.names(dirs) <- rownames(ttop)
 
         return(runGSA(values, gsc=gset, adjMethod='fdr', geneSetStat=m,
-                      directions=dirs))
+                      directions=dirs, ncpus = 8))
 
-    }, ttop, gset, mc.cores=ncores)
+    }, ttop, gset)
 
     names(res) <- methods
 
