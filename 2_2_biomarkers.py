@@ -105,7 +105,7 @@ usedirs = [os.path.join(parent_dir, d) for d in os.listdir(parent_dir)
 
 for dir_ in usedirs:
     print('Biomarkers for %s'
-          % 'cell lines' if dir_.endswith('cl') else 'ex vivo samples')
+          % ('cell lines' if dir_.endswith('cl') else 'ex vivo samples'))
 
     # Reading DEX results
     fnames = [fname for fname in os.listdir(dir_)
