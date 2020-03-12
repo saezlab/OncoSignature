@@ -37,7 +37,7 @@ p_out_dir = 'results/4_ksea'
 
 ks_file = 'opath_ptms_filtered_100320.csv'
 
-pval_thr = 0.05
+pval_thr = 0.1
 # Arguments for labels
 adj_txt_kwargs = dict(arrowprops=dict(zorder=4.5, color='k', arrowstyle='-'))
 #-----------------------------------------------------------------------------#
