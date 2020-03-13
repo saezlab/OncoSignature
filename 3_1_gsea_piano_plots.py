@@ -23,6 +23,7 @@
 import os
 
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from data_tools.plots import piano_consensus
 from data_tools.plots import venn
@@ -78,7 +79,8 @@ def titlemaker(s):
 supdirs = list(os.walk(dir_))[0][1]
 
 for supdir in supdirs:
-    subdirs = list(os.listdir(os.path.join(dir_, supdir)))
+    subdirs = [d for d in os.listdir(os.path.join(dir_, supdir))
+               if '.' not in d]
 
     venn_sets = {'NR up':set(),
                  'NR down':set(),
@@ -96,25 +98,27 @@ for supdir in supdirs:
             df = pd.read_csv(os.path.join(ssdir, f), sep='\t')
             height = len(df) / 5
 
-            fig = piano_consensus(df, figsize=[10, height], title=titlemaker(f),
+            fig = piano_consensus(df, figsize=[10, height],
+                                  title=titlemaker(f),
                                   filename=os.path.join(ssdir,
-                                                        f.split('.')[0] + '.pdf'))
-
+                                                        f.split('.')[0]
+                                                        + '.pdf'))
+            plt.close('all')
             if sdir == 'NR_T_NR_U':
-                if f.endswith('up_rank.txt'):
+                if f == 'dist_up_rank.txt':
                     venn_sets['NR up'].update(df.index.tolist())
 
-                elif f.endswith('dw_rank.txt'):
+                elif f == 'dist_dw_rank.txt':
                     venn_sets['NR down'].update(df.index.tolist())
 
                 else:
                     pass
 
             elif sdir == 'R_T_R_U':
-                if f.endswith('up_rank.txt'):
+                if f == 'dist_up_rank.txt':
                     venn_sets['R up'].update(df.index.tolist())
 
-                elif f.endswith('dw_rank.txt'):
+                elif f == 'dist_dw_rank.txt':
                     venn_sets['R down'].update(df.index.tolist())
 
                 else:
