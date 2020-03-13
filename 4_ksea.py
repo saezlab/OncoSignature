@@ -101,7 +101,7 @@ for dex_dir in usedirs:
         plot = volcano(v['score'], -np.log10(v['pval']), thr_fc=1,
                        thr_pval=pval_thr, title=title, labels=v.index.tolist(),
                        adj_txt_kwargs=adj_txt_kwargs,
-                       txt_size=12, max_labels=30)
+                       txt_size=12, maxlabels=30)
         ax = plot.gca()
         ax.set_xlabel('KSEA score')
         plot.savefig(os.path.join(out_dir, 'ksea_%s.pdf' %k))
