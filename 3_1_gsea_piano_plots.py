@@ -93,17 +93,19 @@ for supdir in supdirs:
         # Listing all files containing the rank matrices
         files = [f for f in os.listdir(ssdir) if f.endswith('_rank.txt')]
 
+        # Setting up x-limit common for plots on same group
+        lim = 200 if supdir == 'ex' else 650
 
         for f in files:
             df = pd.read_csv(os.path.join(ssdir, f), sep='\t')
             height = len(df) / 5
 
             fig = piano_consensus(df, figsize=[10, height],
-                                  title=titlemaker(f),
-                                  filename=os.path.join(ssdir,
-                                                        f.split('.')[0]
-                                                        + '.pdf'))
+                                  title=titlemaker(f))
+            fig.gca().set_xlim(0, lim)
+            fig.savefig(os.path.join(ssdir, f.split('.')[0] + '.pdf'))
             plt.close('all')
+
             if sdir == 'NR_T_NR_U':
                 if f == 'dist_up_rank.txt':
                     venn_sets['NR up'].update(df.index.tolist())
