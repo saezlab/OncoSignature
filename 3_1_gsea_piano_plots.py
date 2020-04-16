@@ -94,14 +94,14 @@ for supdir in supdirs:
         files = [f for f in os.listdir(ssdir) if f.endswith('_rank.txt')]
 
         # Setting up x-limit common for plots on same group
-        lim = 200 if supdir == 'ex' else 650
+        lim = 200# if supdir == 'ex' else 650
 
         for f in files:
             df = pd.read_csv(os.path.join(ssdir, f), sep='\t')
-            height = len(df) / 5
+            height = 2.75#len(df) / 5
 
             fig = piano_consensus(df, figsize=[10, height],
-                                  title=titlemaker(f))
+                                  title=titlemaker(f), top=10)
             fig.gca().set_xlim(0, lim)
             fig.savefig(os.path.join(ssdir, f.split('.')[0] + '.pdf'))
             plt.close('all')
