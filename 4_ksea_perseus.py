@@ -77,18 +77,21 @@ for dex_dir in usedirs:
     results = {}
 
     for k, v in ttops.items():
-        v.set_index('Fusion', drop=True, inplace=True)
+        v.set_index('uniprot', drop=True, inplace=True)
         v.index.name = None
         v = v['Difference']
 
         aux = v.dropna().copy()
         aux.index = [i.split('__')[0] for i in aux.index]
 
-        try:
-            score, pval = kinact.ksea.ksea_mean(aux, ks_adj, minimum_set_size=5)
+#        try:
+        score, pval = kinact.ksea.ksea_mean(aux, ks_adj, minimum_set_size=5)
 
-        except:
-            print(aux.sort_values())
+#        except:
+#            print(k)
+#            print(aux.sort_values())
+#
+#            break
 
         results[k] = pd.DataFrame({'score':score, 'pval':pval})
 
@@ -98,7 +101,7 @@ for dex_dir in usedirs:
         os.makedirs(out_dir)
 
     for k, v in results.items():
-        title = 'KSEA {} vs. {}'.format(*k.split('vs'))
+        title = 'KSEA %s' %k
         print('Significant kinases of', title)
 
         idmap = up_map([i.split('_')[0] for i in v.index])
