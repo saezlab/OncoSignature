@@ -45,7 +45,8 @@ for dir_ in usedirs:
         scvf = dexf.replace('DEX', 'Scurve')
         name = dexf.lstrip('DEX_').rstrip('.txt')
 
-        df = pd.read_csv(os.path.join(fulldir, dexf), sep='\t')
+        df = pd.read_csv(os.path.join(fulldir, dexf), sep='\t',
+                         low_memory=False)
         df.set_index('Fusion', drop=True, inplace=True)
         df.index.name = None
         df = df.loc[:, ['Significant', '(-)log10(P)', 'Difference']]
