@@ -50,6 +50,27 @@ import os
 import numpy as np
 import pandas as pd
 
+from data_tools.databases import up_map
+
+
+def translate(ids):
+    '''
+    Given a set of p-site identifiers, replaces the UniProt AC by its
+    corresponding gene symbol. It is assumed that the UniProt AC is the
+    first element of the identifier followed by an underscore ('_') and
+    whatever else.
+
+    :arg set ids:
+        The IDs to translate from UniProt AC to gene symbols.
+
+    :return list:
+        The same set of IDs but with gene symbols
+    '''
+
+    return [i.replace(i.split('_')[0],
+                      up_map([i.split('_')[0]]).iloc[0, 1]) for i in ids]
+
+
 #----------------------------------- INPUT -----------------------------------#
 parent_dir = 'results/perseus'
 #-----------------------------------------------------------------------------#
@@ -60,7 +81,8 @@ for dir_ in usedirs:
     fulldir = os.path.join(parent_dir, dir_)
 
     # Loading the results from the differential expression analysis
-    dex_files = [f for f in os.listdir(fulldir) if (f.startswith('DEX_') and 'All' not in f)]
+    dex_files = [f for f in os.listdir(fulldir) if (f.startswith('DEX_')
+                 and 'All' not in f)]
 
     # Extracting the significant p-sites
     sig_sites = dict((k.lstrip('DEX_').rstrip('.txt'), dict([('up', set()),
@@ -80,30 +102,27 @@ for dir_ in usedirs:
                                         if (i[1]['Significant'] == '+'
                                             and i[1]['Difference'] < 0)])
 
-# TODO: Missing the Resp. vs NonResp. from Kristina
+    # Case 1.1
+    c11 = (sig_sites['Responder']['down']
+           - sig_sites['NonResponder']['down']
+           & sig_sites['RvsNRpretrea']['up'])
 
-#    # Case 1.1
-#    c11 = (sig_sites['Responder']['down']
-#           - sig_sites['NonResponder']['down']
-#           & sig_sites['R_UvsNR_U']['up'])
-#
-#    # Case 1.2
-#    c12 = (sig_sites['Responder']['up']
-#           - sig_sites['NonResponder']['up']
-#           & sig_sites['R_UvsNR_U']['down'])
-#
-#    # Case 2.1
-#    c21 = (sig_sites['NonResponder']['down']
-#           - sig_sites['Responder']['down']
-#           & sig_sites['R_UvsNR_U']['down'])
-#
-#    # Case 2.2
-#    c22 = (sig_sites['NonResponder']['up']
-#           - sig_sites['Responder']['up']
-#           & sig_sites['R_UvsNR_U']['up'])
-#
-#    # Printing the results
-#    if __name__ == '__main__':
-#        print(__doc__.format(*[', '.join(x) if x else 'None'
-#                               for x in map(translate, [c11, c12, c21, c22])]))
-#
+    # Case 1.2
+    c12 = (sig_sites['Responder']['up']
+           - sig_sites['NonResponder']['up']
+           & sig_sites['RvsNRpretrea']['down'])
+
+    # Case 2.1
+    c21 = (sig_sites['NonResponder']['down']
+           - sig_sites['Responder']['down']
+           & sig_sites['RvsNRpretrea']['down'])
+
+    # Case 2.2
+    c22 = (sig_sites['NonResponder']['up']
+           - sig_sites['Responder']['up']
+           & sig_sites['RvsNRpretrea']['up'])
+
+    # Printing the results
+    if __name__ == '__main__':
+        print(__doc__.format(*[', '.join(x) if x else 'None'
+                               for x in map(translate, [c11, c12, c21, c22])]))

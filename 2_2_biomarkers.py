@@ -82,6 +82,7 @@ def is_significant(df, pval=0.05, logfc=1):
 
     return [p and f for (p, f) in zip(sig_p, sig_fc)]
 
+
 def translate(ids):
     '''
     Given a set of p-site identifiers, replaces the UniProt AC by its
