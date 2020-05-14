@@ -45,13 +45,11 @@ for f in usefiles:
                       np.linspace(1, 0, len(com_doses))))
 
     rep_cols = [i for i in data.columns if i.startswith('Raw')]
-    rep_cols
 
     control_row = [(r[1]['Selinexor dose (nM)'] == 0
                     and r[1]['MK2206 dose (nM)'] == 0) for r in data.iterrows()]
 
     ref = data.loc[control_row, rep_cols].values
-    ref
 
     norm_data = data.copy()
     norm_data[rep_cols] = norm_data[rep_cols] / ref
@@ -66,8 +64,8 @@ for f in usefiles:
         ax.errorbar(subdf.index, subdf.mean(axis=1), yerr=subdf.std(axis=1),
                     c=colors[i], label='%.1f nM MK2206' %d)
         ax.scatter(np.repeat(subdf.index.values, subdf.shape[1]),
-                   subdf.values.reshape(-1),
-                   c=colors[i])
+                   subdf.values.reshape(-1), c=colors[i], alpha=0.5,
+                   marker='o')
 
     ax.set_xscale('log')
     ax.legend(loc=0)
