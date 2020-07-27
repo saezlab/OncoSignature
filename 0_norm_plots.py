@@ -45,16 +45,21 @@ for p, s in product(prefixes, suffixes):
     path = os.path.join(data_dir, '%s_%s.csv' % (p, s))
 
     df = pd.read_csv(path, index_col=0)
+
+    if p == 'raw':
+        df = np.log2(df)
+
     num_batch = len(set(batches[c] for c in df.columns))
 
     corr = df.corr()
     #print(corr.min().min())
     dtype = 'Raw' if p == 'raw' else 'Normalized'
     extype = 'cell line' if s == 'cl' else 'ex-vivo'
-    # Min correlation overall is 0.434...
+    # Min correlation overall is 0.4908...
     fig = cluster_hmap(corr.values, xlabels=corr.columns, ylabels=corr.index,
-                       hmap_kwargs={'vmin': 0.4, 'vmax': 1},
-                       title='%s data of %s samples' % (dtype, extype), figsize=(9, 9))
+                       hmap_kwargs={'vmin': 0.49, 'vmax': 1},
+                       title='%s log2 data of %s samples' % (dtype, extype),
+                       figsize=(9, 9))
     ax = fig.axes[1]
 
     for x in ax.get_xticklabels():
