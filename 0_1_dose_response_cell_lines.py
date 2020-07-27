@@ -81,7 +81,7 @@ for f in usefiles:
 
     ax.set_xscale('log')
     ax.legend(loc=0)
-    ax.set_xlabel('Slinexor dose (nM)')
+    ax.set_xlabel('Selinexor dose (nM)')
     ax.set_ylabel('Survival')
     ax.set_title(name)
     fig.tight_layout()
