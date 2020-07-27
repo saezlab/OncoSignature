@@ -93,14 +93,12 @@ for k, v in norm_samples.items():
 norm_samples[1][norm_samples[1] > 20] = np.nan
 norm_samples[33][norm_samples[33] > 2] = np.nan
 
-
-
 xmin = min(df_raw['slx dose (nM)'].unique()[2:])
 xmax = max(df_raw['slx dose (nM)'].unique()[2:])
 
 groups = chunk_this(use_samples, n)
 m = len(groups)
-groups
+
 fig, ax = plt.subplots(m, n, figsize=(3 * n, 3 * m),
                        sharex=True, sharey=True)
 
