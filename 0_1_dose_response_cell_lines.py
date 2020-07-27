@@ -86,7 +86,7 @@ for f in usefiles:
     ax.set_title(name)
     fig.tight_layout()
 
-    fig.savefig(os.path.join(res_dir, '%s_combi_dose_response.png' %name))
+    fig.savefig(os.path.join(res_dir, '%s_combi_dose_response.pdf' %name))
 
     # Heatmaps
     doses = product(treat_doses, com_doses)
@@ -115,4 +115,4 @@ for f in usefiles:
     ax.set_title(name)
     fig.tight_layout()
 
-    fig.savefig(os.path.join(res_dir, '%s_combi_3d.png' %name))
+    fig.savefig(os.path.join(res_dir, '%s_combi_3d.pdf' %name))
