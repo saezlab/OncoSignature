@@ -30,12 +30,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+from data_tools.models import DoseResponse
+
 #----------------------------------- INPUT -----------------------------------#
 data_dir = 'data'
 res_dir = 'results'
 #-----------------------------------------------------------------------------#
 
 usefiles = [f for f in os.listdir(data_dir) if f.startswith('survival_combi')]
+dataframes = dict()
 
 for f in usefiles:
     data = pd.read_csv(os.path.join(data_dir, f))
@@ -61,6 +64,8 @@ for f in usefiles:
     norm_data[rep_cols] = norm_data[rep_cols] / ref
     norm_data['Average'] = norm_data[rep_cols].mean(axis=1)
     norm_data['stdev'] = norm_data[rep_cols].std(axis=1)
+
+    dataframes[name] = norm_data
 
     # Dose-response curves
     fig, ax = plt.subplots()
@@ -115,4 +120,49 @@ for f in usefiles:
     ax.set_title(name)
     fig.tight_layout()
 
-    fig.savefig(os.path.join(res_dir, '%s_combi_3d.pdf' %name))
+    fig.savefig(os.path.join(res_dir, '%s_combi_3d.pdf' % name))
+
+# Checking synergy
+x0 = [1e3, 1, -1] # Initial guess
+bounds = ([0, 0, -np.inf], [np.inf, np.inf, 0]) # Parameter boundaries
+models = dict()
+asmatrix = np.zeros((len(dataframes), len(com_doses)))
+
+for i, (k, v) in enumerate(dataframes.items()): # For each cell line
+    models[k] = dict()
+
+    for n, df in v.groupby('MK2206 dose (nM)'): # For each MK2206 dose
+        models[k][n] = DoseResponse(df['Selinexor dose (nM)'].values[:-1],
+                                    df['Average'].values[:-1],
+                                    x0=x0, bounds=bounds)
+
+    fig, ax = plt.subplots()
+    bars = [m.ec() for m in models[k].values()]
+    doses = [d for d in models[k].keys()]
+
+    asmatrix[i, :] = bars
+
+    ax.set_title('%s' % k)
+    rng = range(len(bars))
+    ax.bar(rng, bars)
+    ax.set_xticks(rng)
+    ax.set_xticklabels(doses, rotation=90)
+    ax.set_xlim(-1, len(bars))
+    ax.set_xlabel('MK2206 dose (nM)')
+    ax.set_ylabel('EC50 of Selinexor (nM)')
+
+    fig.tight_layout()
+    fig.savefig(os.path.join(res_dir, '%s_ec50s.pdf' %k))
+
+fig, ax = plt.subplots()
+im = ax.imshow(asmatrix, aspect='auto')
+ax.set_yticks(range(asmatrix.shape[0]))
+ax.set_yticklabels([k for k in dataframes.keys()])
+ax.set_xticks(range(asmatrix.shape[1]))
+ax.set_xticklabels(doses, rotation=90)
+ax.set_xlabel('MK2206 dose (nM)')
+ax.set_title('EC50 of Selinexor (nM)')
+fig.colorbar(im)
+
+fig.tight_layout()
+fig.savefig(os.path.join(res_dir, 'ec50s_all.pdf'))
