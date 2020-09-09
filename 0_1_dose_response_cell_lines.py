@@ -122,11 +122,13 @@ for f in usefiles:
 
     fig.savefig(os.path.join(res_dir, '%s_combi_3d.pdf' % name))
 
-# Checking synergy
+# Checking 'synergy'
 x0 = [1e3, 1, -1] # Initial guess
 bounds = ([0, 0, -np.inf], [np.inf, np.inf, 0]) # Parameter boundaries
 models = dict()
 asmatrix = np.zeros((len(dataframes), len(com_doses)))
+
+fig, ax = plt.subplots()
 
 for i, (k, v) in enumerate(dataframes.items()): # For each cell line
     models[k] = dict()
@@ -136,23 +138,22 @@ for i, (k, v) in enumerate(dataframes.items()): # For each cell line
                                     df['Average'].values[:-1],
                                     x0=x0, bounds=bounds)
 
-    fig, ax = plt.subplots()
-    bars = [m.ec() for m in models[k].values()]
+    ecs = [m.ec() for m in models[k].values()]
     doses = [d for d in models[k].keys()]
 
-    asmatrix[i, :] = bars
+    asmatrix[i, :] = ecs
 
-    ax.set_title('%s' % k)
-    rng = range(len(bars))
-    ax.bar(rng, bars)
-    ax.set_xticks(rng)
-    ax.set_xticklabels(doses, rotation=90)
-    ax.set_xlim(-1, len(bars))
-    ax.set_xlabel('MK2206 dose (nM)')
-    ax.set_ylabel('EC50 of Selinexor (nM)')
+    rng = range(len(ecs))
+    ax.plot(rng, ecs, label=k)
+ax.set_xticks(rng)
+ax.set_xticklabels(doses, rotation=90)
+#ax.set_xlim(0, len(ecs))
+ax.set_xlabel('MK2206 dose (nM)')
+ax.set_ylabel('EC50 of Selinexor (nM)')
+ax.legend()
 
-    fig.tight_layout()
-    fig.savefig(os.path.join(res_dir, '%s_ec50s.pdf' %k))
+fig.tight_layout()
+fig.savefig(os.path.join(res_dir, 'combi_ec50s.pdf'))
 
 fig, ax = plt.subplots()
 im = ax.imshow(asmatrix, aspect='auto')
