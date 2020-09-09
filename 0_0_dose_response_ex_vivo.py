@@ -70,6 +70,7 @@ rep_cols = [i for i in df_raw.columns if i.startswith('Raw')]
 
 norm_samples = {}
 
+# Normalizing response to reference sample (0nM)
 for s in df_raw.groupby('Sample #'):
     sample, data = s
 
@@ -82,6 +83,7 @@ for s in df_raw.groupby('Sample #'):
 
     norm_samples[sample] = df
 
+# Checking for extreme outliers
 for k, v in norm_samples.items():
     if (v.dropna().values > 2).any():
         print('Sample #%d' % k)
@@ -93,6 +95,7 @@ for k, v in norm_samples.items():
 norm_samples[1][norm_samples[1] > 20] = np.nan
 norm_samples[33][norm_samples[33] > 2] = np.nan
 
+#Plotting the data in n*m grid
 xmin = min(df_raw['slx dose (nM)'].unique()[2:])
 xmax = max(df_raw['slx dose (nM)'].unique()[2:])
 
@@ -137,7 +140,7 @@ fig.tight_layout()
 fig.savefig(os.path.join(res_dir, 'dose_response.pdf'))
 
 # MODEL FITTING
-#  We fit a Hill function to the response data (average across replicates)
+# We fit a Hill function to the response data (average across replicates)
 # Model figures
 fig, ax = plt.subplots(m, n, figsize=(3 * n, 3 * m),
                        sharex=True, sharey=True)
