@@ -62,6 +62,9 @@ for dir_ in usedirs:
     files = [f for f in os.listdir(dir_) if (f.endswith('_ttop.csv')
                                              and not f.startswith('sig'))]
 
+    vfig, axs = plt.subplots(3, 1, figsize=(7, 17))
+    count = 0
+
     for f in files:
         fname = f.replace('_ttop.csv', '')
         name = ' vs. '.join(fname.split('vs'))
@@ -74,10 +77,17 @@ for dir_ in usedirs:
         df.index = ['_'.join([str(a), b]) for a, b in zip(mapped, residues)]
 
         # Volcano plot
-        volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
-                labels=df.index.values,
-                filename=os.path.join(dir_, '%s.pdf' % fname),
-                adj_txt_kwargs=adj_txt_kwargs)
+        if 'R_U' in f:
+            volcano(df['logFC'], -np.log10(df['P.Value']),
+                    title=name, labels=df.index.tolist(),
+                    adj_txt_kwargs=adj_txt_kwargs, ax=axs[count])
+            count += 1
+
+        else:
+            volcano(df['logFC'], -np.log10(df['P.Value']), title=name,
+                    labels=df.index.tolist(),
+                    filename=os.path.join(dir_, '%s.pdf' % fname),
+                    adj_txt_kwargs=adj_txt_kwargs)
 
         # p-value histogram
         fig, ax = plt.subplots()
@@ -92,3 +102,5 @@ for dir_ in usedirs:
 
         fig.savefig(os.path.join(dir_, '%s_pval_hist.pdf' % fname))
         plt.close('all')
+
+    vfig.savefig(os.path.join(dir_, 'all_volcanos.pdf'))

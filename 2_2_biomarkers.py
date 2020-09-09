@@ -147,4 +147,4 @@ for dir_ in usedirs:
     # Printing the results
     if __name__ == '__main__':
         print(__doc__.format(*[', '.join(x) if x else 'None'
-                               for x in map(translate, [c11, c12, c21, c22])]))
+                               for x in [c11, c12, c21, c22]]))
