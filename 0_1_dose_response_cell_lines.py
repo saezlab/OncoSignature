@@ -145,6 +145,7 @@ for i, (k, v) in enumerate(dataframes.items()): # For each cell line
 
     rng = range(len(ecs))
     ax.plot(rng, ecs, label=k)
+
 ax.set_xticks(rng)
 ax.set_xticklabels(doses, rotation=90)
 #ax.set_xlim(0, len(ecs))
@@ -167,3 +168,76 @@ fig.colorbar(im)
 
 fig.tight_layout()
 fig.savefig(os.path.join(res_dir, 'ec50s_all.pdf'))
+
+def isobole(x, k_x, k_y, m_x, m_y, p, q):
+    return ((k_y**q/(2*m_y - 1)) ** (1/q) - (k_y**q*m_x*x**p/(k_x**p*m_y
+            - m_x*x**p + m_y*x**p)) ** (1/q))
+
+def resp_y(y, k_y, m_y, q):
+    return m_y * y ** q / (k_y ** q + y ** q)
+
+def y_of_x(x, k_x, k_y, m_x, m_y, p, q):
+    return (k_y**q*m_x*x**p/(k_x**p*m_y - m_x*x**p + m_y*x**p)) ** (1/q)
+
+# Generating the dose combination matrices
+measurements = dict()
+predicted = dict()
+
+fig, ax = plt.subplots()
+# Computing synergy
+for k, v in dataframes.items():
+    # Rows are Slx and columns are MK doses
+    measurements[k] = pd.DataFrame(index=treat_doses, columns=com_doses)
+    predicted[k] = pd.DataFrame(index=treat_doses, columns=com_doses)
+
+    slx_dose, slx_resp = v.loc[v['MK2206 dose (nM)'] == 0,
+                                 ['Selinexor dose (nM)', 'Average']].values.T
+    mk_dose, mk_resp = v.loc[v['Selinexor dose (nM)'] == 0,
+                                 ['MK2206 dose (nM)', 'Average']].values.T
+
+    slx_mod = DoseResponse(slx_dose[:-1], slx_resp[:-1], x0=x0, bounds=bounds)
+    k_x, m_x, p = slx_mod.params
+    mk_mod = DoseResponse(mk_dose[:-1], mk_resp[:-1], x0=x0, bounds=bounds)
+    k_y, m_y, q = mk_mod.params
+
+    x = np.linspace(0, slx_mod.ec(), 1000)
+    ax.plot(x, isobole(x, k_x, k_y, m_x, m_y, p, q), label=k)
+
+    # Computing predicted response
+    for i, r in v.iterrows():
+        # Retrieve the doses of each drug
+        x, y = r[['Selinexor dose (nM)', 'MK2206 dose (nM)']].values
+        # Store the real response value for that combination
+        measurements[k].loc[x, y] = r['Average']
+        # Theoretical y
+        pred_y = y_of_x(x, k_x, k_y, m_x, m_y, p, q) + y
+        # Predicted response of theoretical y
+        predicted[k].loc[x, y] = resp_y(pred_y, k_y, m_y, q)
+
+ax.set_xlabel('Selinexor dose (nM)')
+ax.set_ylabel('MK2206 dose (nM)')
+ax.set_title(r'Isobole of EC$_{50}$')
+ax.legend()
+
+fig.savefig(os.path.join(res_dir, 'isoboles.pdf'))
+
+for k in measurements.keys():
+    print(k)
+    dif = predicted[k] - measurements[k]
+    print(dif.mean().mean())
+    print(dif.max().max())
+    print(dif.min().min())
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(dif.values.astype(float), cmap='viridis', vmin=-0.5, vmax=0.5)
+    ax.set_title('Response diff. pred. - obs. for %s' %k)
+    fig.colorbar(im)
+    ax.set_xticks(range(len(dif.columns)))
+    ax.set_xticklabels(dif.columns, rotation=90)
+    ax.set_yticks(range(len(dif.index)))
+    ax.set_yticklabels(dif.index)
+
+    ax.set_xlabel('MK2206 dose (nM)')
+    ax.set_ylabel('Selinexor dose (nM)')
+    fig.tight_layout()
+    fig.savefig(os.path.join(res_dir, 'resp_dif_%s.pdf') % k)
