@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
