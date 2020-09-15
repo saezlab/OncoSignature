@@ -218,15 +218,15 @@ ax.set_xlabel('Selinexor dose (nM)')
 ax.set_ylabel('MK2206 dose (nM)')
 ax.set_title(r'Isobole of EC$_{50}$')
 ax.legend()
-
+ax.set_xlim(0, 180)
+ax.set_ylim(0, 4500)
 fig.savefig(os.path.join(res_dir, 'isoboles.pdf'))
-
+dif
+# Optmized Loewe (Loewe adapted to our DR model)
 for k in measurements.keys():
     print(k)
     dif = predicted[k] - measurements[k]
     print(dif.mean().mean())
-    print(dif.max().max())
-    print(dif.min().min())
 
     fig, ax = plt.subplots()
     im = ax.imshow(dif.values.astype(float), cmap='viridis', vmin=-0.5, vmax=0.5)
@@ -241,3 +241,10 @@ for k in measurements.keys():
     ax.set_ylabel('Selinexor dose (nM)')
     fig.tight_layout()
     fig.savefig(os.path.join(res_dir, 'resp_dif_%s.pdf') % k)
+
+# Bliss
+for k, v in measurements.items():
+    predicted = np.outer(v.iloc[:, 0], v.iloc[0, :])
+    dif = predicted - v
+    print(k)
+    print(dif.mean().mean())
