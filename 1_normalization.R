@@ -25,7 +25,7 @@ library(dplyr)
 library(vsn)
 library(limma)
 
-library(omicToolsTest)
+#library(omicToolsTest)
 
 #----------------------------------- INPUT -----------------------------------#
 data_dir <- 'data'
@@ -112,14 +112,14 @@ write.csv(raw_df_cl, paste(data_dir, 'raw_cl.csv', sep='/'))
 subdir <- paste(out_dir, '1_log2_ex', sep='/')
 ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
 
-magicPlotMaker(log2(raw_df_ex), outpath = subdir, w=15, h=15,
-               targets=targets[, c('sample', 'condition')])
+#magicPlotMaker(log2(raw_df_ex), outpath = subdir, w=15, h=15,
+#               targets=targets[, c('sample', 'condition')])
 
 subdir <- paste(out_dir, '1_log2_cl', sep='/')
 ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
 
-magicPlotMaker(log2(raw_df_cl), outpath = subdir, w=15, h=15,
-               targets=targets[, c('sample', 'condition')])
+#magicPlotMaker(log2(raw_df_cl), outpath = subdir, w=15, h=15,
+#               targets=targets[, c('sample', 'condition')])
 
 # Normalizing and removing batch effect
 batches <- targets$batch
@@ -143,13 +143,13 @@ df_bcor_cl = df_bcor[, !startsWith(colnames(df_bcor), 'EX')]
 subdir <- paste(out_dir, '1_norm_ex', sep='/')
 ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
 
-magicPlotMaker(df_bcor_ex, outpath = subdir, w=15, h=15,
-               targets=targets[, c('sample', 'condition')])
+#magicPlotMaker(df_bcor_ex, outpath = subdir, w=15, h=15,
+#               targets=targets[, c('sample', 'condition')])
 subdir <- paste(out_dir, '1_norm_cl', sep='/')
 ifelse(!dir.exists(subdir), dir.create(subdir, recursive=T), F)
 
-magicPlotMaker(df_bcor_cl, outpath = subdir, w=15, h=15,
-               targets=targets[, c('sample', 'condition')])
+#magicPlotMaker(df_bcor_cl, outpath = subdir, w=15, h=15,
+#               targets=targets[, c('sample', 'condition')])
 
 # Save the normalized data
 write.csv(df_bcor_ex, paste(data_dir, 'norm_data_ex.csv', sep='/'))
