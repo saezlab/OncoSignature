@@ -58,7 +58,7 @@ methods <- c('fisher', 'stouffer', 'reporter', 'tailStrength', 'wilcoxon',
 #' 
 #' @returns [list] Named list containing the method names and their
 #' corresponding results
-run_piano <- function(methods, ttop, gset, ncores=1){
+run_piano <- function(methods, ttop, gset){
     # Remove NaNs
     ttop <- ttop[complete.cases(ttop), ]
 
@@ -147,7 +147,7 @@ for (dex_dir in dex_dirs){
                                      row.names=1))
     
         # Running piano
-        piano_results <- run_piano(methods, df, gset, ncores = 4)
+        piano_results <- run_piano(methods, df, gset)
     
         # Saving the environment
         save(list=ls(all.names=T),
