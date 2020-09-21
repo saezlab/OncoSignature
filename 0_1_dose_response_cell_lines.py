@@ -221,7 +221,7 @@ ax.legend()
 ax.set_xlim(0, 180)
 ax.set_ylim(0, 4500)
 fig.savefig(os.path.join(res_dir, 'isoboles.pdf'))
-dif
+
 # Optmized Loewe (Loewe adapted to our DR model)
 for k in measurements.keys():
     print(k)
@@ -229,8 +229,9 @@ for k in measurements.keys():
     print(dif.mean().mean())
 
     fig, ax = plt.subplots()
-    im = ax.imshow(dif.values.astype(float), cmap='viridis', vmin=-0.5, vmax=0.5)
-    ax.set_title('Response diff. pred. - obs. for %s' %k)
+    im = ax.imshow(dif.values.astype(float), cmap='coolwarm',
+                   vmin=-0.5, vmax=0.5)
+    ax.set_title('%s (%.3f)' % (k, dif.mean().mean()))
     fig.colorbar(im)
     ax.set_xticks(range(len(dif.columns)))
     ax.set_xticklabels(dif.columns, rotation=90)
