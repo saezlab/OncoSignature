@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2020 Nicolàs Palacio
 #
 # Contact: nicolas.palacio@bioquant.uni-heidelberg.de
@@ -40,8 +41,8 @@ resp_data = 'raw_survival_data.tab'
 
 n = 4 # Number of columns on the multiplots
 # Selected samples
-use_samples = [6, 8, 9, 13, 14, 15, 18, 19, 24, 25,
-               27, 28, 29, 34, 36, 39, 40, 41, 42, 44]
+use_samples = range(1, 45)#[6, 8, 9, 13, 14, 15, 18, 19, 24, 25,
+               #27, 28, 29, 34, 36, 39, 40, 41, 42, 44]
 #-----------------------------------------------------------------------------#
 
 def plot(ax, df):
@@ -239,7 +240,7 @@ for k, v in ec50s.items():
     sample_class.loc[k, 'sample'] = str(k)
     sample_class.loc[k, 'condition'] = 'R' if v <= 1e3 else 'NR'
 
-missing = [1, 4, 7, 12, 26]
+missing = []#[1, 4, 7, 12, 26]
 samples = pd.DataFrame(ec50s.values(), index=ec50s.keys(), columns=['EC50'])
 
 for s in missing:
@@ -267,5 +268,5 @@ for s in samples.iterrows():
     annot.append('R' if s[1].EC50 <= 1e3 else 'NR')
 
 samples['annotation'] = annot
-samples['sample'] = samples.index
-samples.to_csv(os.path.join(data_dir, 'sample_annotated.csv'), index=False)
+
+samples.to_csv(os.path.join(data_dir, 'sample_annotated.csv'))
