@@ -28,14 +28,14 @@ library(biomaRt)
 library(dplyr)
 
 #----------------------------------- INPUT -----------------------------------#
-res_dir <- 'results/perseus'
-out_dir <- 'results/3_gsea'
+res_dir <- 'results_bak/perseus'
+out_dir <- 'results_bak/3_gsea'
 
 data_dir <- 'data'
 # If exists, reads it, otherwise writes it
 mapping_file <- 'psite_to_gset.csv'
 # Ignored if above exists
-msigdb_file <- 'msigdb_path_to_gsymbol.csv'
+msigdb_file <- 'msigdb_c2_all_v7_2_GS.csv'
 
 # Which piano methods will be computed
 methods <- c('fisher',
@@ -110,10 +110,11 @@ if (file.exists(map_table_path)){
 
     # XXX: OLD, doesn't work
     # - Our IDs
-    phospho_ids <- as.character(read.csv(paste(data_dir, 'norm_data.csv',
+    phospho_ids_ex <- as.character(read.csv(paste(data_dir, 'norm_data_ex.csv',
                                                sep='/'))$X)
-
-    
+    phospho_ids_cl <- as.character(read.csv(paste(data_dir, 'norm_data_cl.csv',
+                                               sep='/'))$X)
+    phospho_ids <- unique(c(phospho_ids_cl, phospho_ids_ex))
     
     upids <- gsub('[_].*', '', phospho_ids) # Extract UniProt IDs
     # - Loading Mart for Human
