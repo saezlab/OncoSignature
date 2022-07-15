@@ -1,7 +1,8 @@
 # OncoSignature - Drug response prediction on Acute Myeloid Leukemia
 
 Copyright (C) 2019 Nicolàs Palacio<br>
-Contact: nicolas.palacio@bioquant.uni-heidelberg.de<br>
+Contact: nicolas.palacio@bioquant.uni-heidelberg.de<br>  
+Please, use the Github Issue page for questionts.<br>  
 
 GNU-GLPv3:
 
